@@ -11,7 +11,7 @@ Goal: over many runs, compare models and stacks by reading back the logs.
 ## Layout
 
 ```
-projects/<slug>/        generated application
+projects/<slug>/        generated application (see README requirement below)
 .logs/<slug>/           logs for that run (required)
 .logs/INDEX.md          one-line summary per run
 AGENTS.md               this file
@@ -94,6 +94,19 @@ Status: `done` / `partial` / `blocked`.
 - If blocked, write to `friction.md` before asking the user.
 - Entries are terse: H3 heading + 1-5 bullets. Real newlines, not `\n`.
 - Commit generated project and its logs together. One commit per run is fine.
+
+## Project README (`projects/<slug>/README.md`)
+
+Every run MUST ship a `README.md` inside the generated project that describes **that** app, not the upstream scaffold boilerplate.
+
+Replace or rewrite the default template README so it matches what was built. Include at least:
+
+- **What it does** — one short paragraph on purpose and scope (e.g. client-only vs API-backed).
+- **How to start** — prerequisites (e.g. Bun), `bun install` if needed, and the dev command (`bun dev` unless the stack differs).
+- **How to use** — the main user flows (screens, actions, where data lives).
+- **Optional** — production build command (`bun run build`) and stack note if helpful for the harness.
+
+Log significant README assumptions in `progress.md` only if they affect behavior or reproducibility.
 
 ## Stack defaults
 
