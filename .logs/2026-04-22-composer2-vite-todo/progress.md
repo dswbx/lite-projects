@@ -22,3 +22,8 @@
 ### 2026-04-22T18:09Z — verify
 - ran `bun run build` (tsc + vite)
 - outcome: ok
+
+### 2026-04-22T19:00Z — README and AGENTS
+- updated `projects/2026-04-22-composer2-vite-todo/README.md` with app behavior, start, and usage
+- updated root `AGENTS.md` to require the same for future `projects/<slug>/README.md` files
+- outcome: ok
