@@ -11,12 +11,14 @@ Goal: over many runs, compare models and stacks by reading back the logs.
 ## Layout
 
 ```
-projects/<slug>/        generated application (see README requirement below)
+<slug>/                 generated application at repo root (see README requirement below)
 .logs/<slug>/           logs for that run (required)
 .logs/INDEX.md          one-line summary per run
 AGENTS.md               this file
 CLAUDE.md               pointer to this file
 ```
+
+Generated projects live at the repo root, **not** nested under a `projects/` directory.
 
 Slug format: `YYYY-MM-DD-<model>-<stack>-<short-name>`
 Example: `2026-04-22-opus47-vite-todo`
@@ -95,16 +97,20 @@ Status: `done` / `partial` / `blocked`.
 - Entries are terse: H3 heading + 1-5 bullets. Real newlines, not `\n`.
 - Commit generated project and its logs together. One commit per run is fine.
 
-## Project README (`projects/<slug>/README.md`)
+## Project README (`<slug>/README.md`)
 
-Every run MUST ship a `README.md` inside the generated project that describes **that** app, not the upstream scaffold boilerplate.
+Every run MUST ship a `README.md` at the top of the generated project. It is the **first thing a non-technical user sees** — write for them, not for engineers. Replace the scaffold boilerplate entirely.
 
-Replace or rewrite the default template README so it matches what was built. Include at least:
+Requirements:
 
-- **What it does** — one short paragraph on purpose and scope (e.g. client-only vs API-backed).
-- **How to start** — prerequisites (e.g. Bun), `bun install` if needed, and the dev command (`bun dev` unless the stack differs).
-- **How to use** — the main user flows (screens, actions, where data lives).
-- **Optional** — production build command (`bun run build`) and stack note if helpful for the harness.
+- **Plain language.** No jargon. If a term is unavoidable, explain it in one short phrase.
+- **What it is** — one or two sentences a non-technical user understands. What does the app do for them?
+- **How to open it** — exact, copy-pasteable steps. Assume nothing is installed. Mention Bun (and link to https://bun.sh if install is needed), then `bun install`, then `bun dev`, then which URL to open.
+- **How to use it** — walk through the main screens and actions in order. What does the user click? What happens? Where does their data go (browser only? server?)?
+- **Troubleshooting** — 1-3 common issues and fixes if relevant (e.g. port already in use).
+- **Optional** — `bun run build` for a production build, short stack note at the bottom.
+
+Rule of thumb: if a friend who doesn't code could not follow the README to run and use the app, rewrite it.
 
 Log significant README assumptions in `progress.md` only if they affect behavior or reproducibility.
 
@@ -112,9 +118,14 @@ Log significant README assumptions in `progress.md` only if they affect behavior
 
 Unless the prompt says otherwise: ESM, TypeScript, Vite, Bun, Tailwind v4 (using the Vite plugin, per https://tailwindcss.com/docs/installation/using-vite). Note deviations in `progress.md`.
 
-## supabase/lite compatibility
+## supabase/lite (REQUIRED)
 
-Generated apps should run under [supabase/lite](https://github.com/supabase/lite). Runtime constraints are discovered per run — when one surfaces, log it in `friction.md` so constraints accumulate across runs.
+**Every generated project MUST use [supabase/lite](https://github.com/supabase/lite).** This is the entire purpose of this repository — runs that do not integrate supabase/lite are invalid.
+
+- The `supabase/lite` repo is **private**. Use the `gh` CLI to fetch details (README, source, issues) before integrating — e.g. `gh repo view supabase/lite`, `gh api repos/supabase/lite/contents/README.md`, `gh search code --repo supabase/lite <query>`. Do not guess its API.
+- Wire supabase/lite into the app as the data/runtime layer. Do not substitute another backend or skip it.
+- If a prompt appears to conflict with this requirement, log the conflict in `friction.md` and still integrate supabase/lite — do not silently drop it.
+- Runtime constraints are discovered per run. When one surfaces, log it in `friction.md` so constraints accumulate across runs.
 
 ## .gitignore
 
