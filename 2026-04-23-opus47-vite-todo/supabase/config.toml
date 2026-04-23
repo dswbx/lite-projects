@@ -1,0 +1,11 @@
+project_id = "vite-todo"
+
+[api]
+port = 54321
+
+[auth]
+enabled = true
+jwt_secret = "dev-secret-change-me"
+
+[auth.email]
+enable_confirmations = false
