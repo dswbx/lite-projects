@@ -39,7 +39,7 @@ Header (top of file, written first):
 - model: <id>
 - stack: <stack>
 - started: <ISO timestamp>
-- tokens / cost: <if known, update at end>
+- ended: <ISO timestamp, written at handoff>
 ```
 
 Then H3 entries:
