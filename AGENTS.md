@@ -84,7 +84,18 @@ Things that worked well and should be preserved or templated.
 - Log every external fetch (URL + why) in `progress.md`.
 - If blocked, write to `friction.md` before asking the user.
 - Entries are terse: H3 heading + 1-5 bullets. Real newlines, not `\n`.
-- Commit generated project and its logs together. One commit per run is fine.
+
+## Handoff & commit
+
+- **Do not commit.** When the run is done, present the work to the human: slug path, what was built, how to run it, notable friction/wins.
+- Wait for explicit human approval before committing.
+- On approval, commit the generated project and its logs together (one commit per run) with attribution trailer:
+
+  ```
+  Co-authored-by: <model-name> <mode-email-address>
+  ```
+
+  Use the actual model identifier for the run (e.g. `claude-opus-4-7`).
 
 ## Project README (`<slug>/README.md`)
 
