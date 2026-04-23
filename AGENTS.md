@@ -12,22 +12,21 @@ Goal: over many runs, compare models and stacks by reading back the logs.
 
 ```
 <slug>/                 generated application at repo root (see README requirement below)
-.logs/<slug>/           logs for that run (required)
-.logs/INDEX.md          one-line summary per run
+<slug>/.logs/           logs for that run (required, inside the project)
 AGENTS.md               this file
 CLAUDE.md               pointer to this file
 ```
 
-Generated projects live at the repo root, **not** nested under a `projects/` directory.
+Generated projects live at the repo root, **not** nested under a `projects/` directory. The directory listing itself is the index — no separate INDEX file.
 
 Slug format: `YYYY-MM-DD-<model>-<stack>-<short-name>`
 Example: `2026-04-22-opus47-vite-todo`
 
-Model shorthand: `opus47`, `sonnet46`, `haiku45`, `gpt5`, etc. Keep terse.
+Model shorthand: `opus47`, `sonnet46`, `haiku45`, `gpt5.4`, etc. Keep terse.
 
 ## Logging protocol
 
-Every run MUST create `.logs/<slug>/` with four files. Append-only — never delete, correct via new entry referencing the prior one.
+Every run MUST create `<slug>/.logs/` with four files. Append-only — never delete, correct via new entry referencing the prior one.
 
 ### `prompt.md`
 Exact user prompt, verbatim. Written once at the start.
@@ -77,16 +76,6 @@ Things that worked well and should be preserved or templated.
 - why it mattered: kept iteration loop tight
 - keep: yes, default for future vite runs
 ```
-
-## Meta log
-
-`.logs/INDEX.md` — one line per run, appended at end of run:
-
-```
-- 2026-04-22 | opus47 | vite+react+tailwind | todo app | done | [log](2026-04-22-opus47-vite-todo/)
-```
-
-Status: `done` / `partial` / `blocked`.
 
 ## Rules
 
