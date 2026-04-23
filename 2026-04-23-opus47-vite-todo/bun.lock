@@ -5,10 +5,8 @@
     "": {
       "name": "vite-todo",
       "dependencies": {
-        "@electric-sql/pglite": "^0.4.4",
         "@supabase/supabase-js": "^2.97.0",
-        "lite-supa": "latest",
-        "postgres": "^3.4.9",
+        "lite-supa": "0.3.0-canary-20260423192442-46c4f17",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
       },
@@ -63,8 +61,6 @@
     "@babel/types": ["@babel/types@7.29.0", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A=="],
 
     "@commander-js/extra-typings": ["@commander-js/extra-typings@14.0.0", "", { "peerDependencies": { "commander": "~14.0.0" } }, "sha512-hIn0ncNaJRLkZrxBIp5AsW/eXEHNKYQBh0aPdoUqNgD+Io3NIykQqpKFyKcuasZhicGaEZJX/JBSIkZ4e5x8Dg=="],
-
-    "@electric-sql/pglite": ["@electric-sql/pglite@0.4.4", "", {}, "sha512-g/6CWAJ4XOkObWCWAQ2IReZD8VvsDy3poRHSKvpRR2F96F8WJ3HVbjpso3gN7l0q6QPPgvxSSpl/qo5k8a7mkQ=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.27.7", "", { "os": "aix", "cpu": "ppc64" }, "sha512-EKX3Qwmhz1eMdEJokhALr0YiD0lhQNwDqkPYyPhiSwKrh7/4KRjQc04sZ8db+5DVVnZ1LmbNDI1uAMPEUBnQPg=="],
 
@@ -370,7 +366,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.32.0", "", { "os": "win32", "cpu": "x64" }, "sha512-Amq9B/SoZYdDi1kFrojnoqPLxYhQ4Wo5XiL8EVJrVsB8ARoC1PWW6VGtT0WKCemjy8aC+louJnjS7U18x3b06Q=="],
 
-    "lite-supa": ["lite-supa@0.3.0", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@supabase/pg-delta": "1.0.0-alpha.10", "commander": "^14.0.3", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-parser": "latest" }, "peerDependencies": { "@electric-sql/pglite": "0.4.1", "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite-supa": "dist/cli/index.js" } }, "sha512-Bdf8+xw++JrLxZn15SFFV3uZgRfqHScgNfb98rH6UpZnn7oKT90IkPaOGWLhXp1YbWlSFn1t8WQ6TUMUVWUKLw=="],
+    "lite-supa": ["lite-supa@0.3.0-canary-20260423192442-46c4f17", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@supabase/pg-delta": "1.0.0-alpha.10", "commander": "^14.0.3", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-parser": "latest" }, "peerDependencies": { "@electric-sql/pglite": "0.4.1", "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite-supa": "dist/cli/index.js" } }, "sha512-c7OxgSy2YeeSpm1SEjVRk4t1SWUVNFHGlWBsXf7y8YbnG1LOCvYDuw5P4nguK2O6xhAqw2q9L2dbmKrOJLASDA=="],
 
     "long": ["long@5.3.2", "", {}, "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="],
 

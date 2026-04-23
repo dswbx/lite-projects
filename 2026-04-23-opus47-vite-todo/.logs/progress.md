@@ -36,3 +36,17 @@
 ### 2026-04-23T20:08Z — wrote README for non-technical users
 - plain language per AGENTS.md
 - outcome: ok
+
+### 2026-04-23T21:10Z — retest on lite-supa canary
+- `bun remove postgres @electric-sql/pglite`
+- `bun add lite-supa@0.3.0-canary-20260423190458-11f0141`
+- original friction (eager driver imports in vite plugin): FIXED, confirmed via grep on `dist/vite/`
+- new friction: `bun dev` fails — circular self-import in `dist/db/node/index.js` leaves `SqliteConnection` undefined at class-extends
+- see friction.md 21:12Z [blocker]
+- outcome: blocked on canary
+
+### 2026-04-23T21:26Z — retest on lite-supa@0.3.0-canary-20260423192442-46c4f17
+- `rm -rf node_modules/lite-supa && bun add lite-supa@0.3.0-canary-20260423192442-46c4f17 --force`
+- `bun dev` boots, vite ready in 1.65s, sqlite db provisioned (6 tables / 5 policies)
+- curl: `/` → 200, `/rest/v1/todos` → 200
+- outcome: ok — both prior frictions resolved on this canary

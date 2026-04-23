@@ -8,10 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.4.4",
     "@supabase/supabase-js": "^2.97.0",
-    "lite-supa": "latest",
-    "postgres": "^3.4.9",
+    "lite-supa": "0.3.0-canary-20260423192442-46c4f17",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
