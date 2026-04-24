@@ -8,6 +8,16 @@ This repo is a harness for one-shot generating applications with different LLM m
 
 Goal: over many runs, compare models and stacks by reading back the logs.
 
+## Fresh-session rule (IMPORTANT)
+
+Each run is a **cold start**. Pretend no prior runs exist.
+
+- **Do not read, list, grep, or otherwise inspect any sibling `<slug>/` directory** in this repo. Other runs are evaluation artifacts, not reference material — peeking at them contaminates the comparison.
+- Do not copy code, configs, logs, `package.json`, lockfiles, READMEs, or friction/wins entries from previous runs.
+- Do not use prior `friction.md` to pre-empt known issues. Rediscover them — that's the measurement.
+- Your only external help is the **remote [supabase/lite](https://github.com/supabase/lite) repository** (fetched via `gh`) plus official docs for the chosen stack. No local cross-run shortcuts.
+- Files you may read in this repo: `AGENTS.md`, `CLAUDE.md`, and files inside your own `<slug>/` once created. Nothing else.
+
 ## Layout
 
 ```
