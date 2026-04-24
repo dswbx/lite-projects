@@ -67,24 +67,90 @@ Every assumption is logged the moment it's made, not after.
 ### `friction.md`
 Anything unclear, missing, broken, or requiring a workaround. Write before asking the user.
 
+**Be thorough, not terse.** These entries feed downstream Linear tickets — include everything a maintainer would need to reproduce and fix without re-running the session. Do not rely on the LLM's conversation context to fill gaps; the ticket author won't have it.
+
+Include where relevant:
+- exact commands run and their full error output (fenced code blocks)
+- offending code snippets (fenced, with file path + line range)
+- relevant config excerpts (`package.json`, `vite.config.ts`, etc.)
+- stack traces, network responses, or log excerpts verbatim
+- versions (`bun -v`, package versions from lockfile, supabase/lite commit SHA)
+- links to the specific doc section or source file consulted
+- what you tried, in order, and why each attempt failed
+- minimal repro if you found one
+
+Bullets are fine for short items; use code blocks and sub-headings freely for longer ones. Length is not a problem — missing detail is.
+
 ```
 ### 2026-04-22T14:40Z — tailwind v4 vite plugin name unclear [minor]
 - expected: `@tailwindcss/vite` per docs
 - actual: docs show both `@tailwindcss/vite` and postcss path, unclear which is canonical
 - hypothesis: docs in transition
 - suggested improvement: pick one in global prefs, note here
+- versions: tailwindcss@4.0.3, vite@5.4.10, bun@1.1.38
+- doc link: https://tailwindcss.com/docs/installation/using-vite#configure-the-vite-plugin
+
+config tried:
+​```ts
+// vite.config.ts
+import tailwindcss from "@tailwindcss/vite";
+export default defineConfig({ plugins: [tailwindcss()] });
+​```
+
+error from `bun dev`:
+​```
+[vite] Internal server error: Cannot find module '@tailwindcss/vite'
+  at ... (full stack)
+​```
 ```
 
 Severity tags: `[blocker]`, `[major]`, `[minor]`.
 
 ### `wins.md`
-Things that worked well and should be preserved or templated.
+Appreciation log. What felt easy, obvious, or delightful from an LLM's perspective. Equal in weight to `friction.md` — we need to know exactly what to double down on, not just what to fix.
+
+**Be thorough, not terse.** Same reasoning as friction: downstream readers won't have session context. Concrete detail beats vague praise.
+
+Capture things like:
+- APIs that worked first try with no doc-diving
+- naming/shape that matched Supabase conventions so prior knowledge transferred cleanly
+- moments where supabase/lite being **Supabase-compatible but not Supabase** was clear and non-confusing (e.g. same client SDK worked, same SQL dialect, but local-only semantics were obvious)
+- error messages that pointed directly at the fix
+- defaults that were correct out of the box (no config needed)
+- docs/examples that answered the exact question asked
+- fast feedback loops (cold start, HMR, type errors surfacing early)
+- ergonomics that let you skip boilerplate an LLM would otherwise generate
+
+Include where relevant:
+- the exact API call / snippet that "just worked" (fenced code block)
+- versions, so we know which release shipped the good thing
+- link to the doc or source file that made it click
+- counterfactual: what would have been painful without this? (helps judge impact)
+- whether this is a Supabase parity win (familiar) or a supabase/lite-specific win (distinct + good)
+
+Length is not a problem — vague praise is. "Supabase client worked" is not a win entry; show the code, the version, and why it was obvious.
 
 ```
 ### 2026-04-22T15:05Z — bun + vite cold start
-- bun install + dev ready in ~2s
-- why it mattered: kept iteration loop tight
+- bun install + dev ready in ~2s on M-series
+- why it mattered: kept iteration loop tight, no mental context switch
 - keep: yes, default for future vite runs
+- versions: bun@1.1.38, vite@5.4.10
+```
+
+```
+### 2026-04-22T15:40Z — supabase-js client worked against lite unchanged
+- used `@supabase/supabase-js` pointed at lite's local URL, auth + from().select() worked first try
+- why it mattered: zero new API surface to learn; existing Supabase knowledge transferred
+- parity win: drop-in compatibility is the headline feature — users keep their muscle memory
+- not-confusing: lite's README made clear it's a local-first runtime, not a hosted Supabase, so I didn't reach for dashboard-only features
+- versions: @supabase/supabase-js@2.45.0, supabase/lite@<sha>
+- snippet:
+​```ts
+const supabase = createClient(LITE_URL, LITE_ANON_KEY);
+const { data } = await supabase.from("todos").select();
+​```
+- counterfactual: if the client shape differed, I'd have burned time diffing APIs and probably mis-generated types
 ```
 
 ## Rules
@@ -93,7 +159,8 @@ Things that worked well and should be preserved or templated.
 - Log assumptions the moment they're made.
 - Log every external fetch (URL + why) in `progress.md`.
 - If blocked, write to `friction.md` before asking the user.
-- Entries are terse: H3 heading + 1-5 bullets. Real newlines, not `\n`.
+- Entries are terse by default: H3 heading + 1-5 bullets. Real newlines, not `\n`.
+- Exception: `friction.md` entries should be as detailed as needed (code blocks, stack traces, versions, configs) so downstream tickets don't require session context to reproduce.
 
 ## Handoff & commit
 
