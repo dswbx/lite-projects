@@ -1,0 +1,1 @@
+create a job board. employers can sign up as employers and create job listings with comprehensive detail about the offering. job seekers can see listings but only apply once they signed up. both should have an overview (e.g. empoyers see their listings, who applied etc – job seekers see jobs applied to).
