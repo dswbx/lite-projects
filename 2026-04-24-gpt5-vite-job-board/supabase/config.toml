@@ -4,7 +4,7 @@ max_rows = 1000
 
 [db]
 driver = "sqlite-postgres"
-url = "file:./supabase/.temp/worklane-ready.db"
+url = "file:./supabase/.temp/worklane-canary-24f92a3.db"
 
 [db.migrations]
 schema_paths = ["./schemas/schema.sql"]

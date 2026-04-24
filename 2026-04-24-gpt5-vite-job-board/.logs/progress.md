@@ -127,3 +127,25 @@
 - outcome: passed
 - stopped verification dev server after browser testing
 - handoff: ready
+
+### 2026-04-24T09:36Z - test canary for correlated RLS subquery
+- user requested testing `lite-supa@0.3.1-canary-20260424093343-3d07a7e`
+- assumed: test should restore the original correlated `exists (select 1 ...)` employer application policies that caused the RLS friction
+- changed `package.json` to the canary version
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-subquery.db` to avoid stale migration/data state
+- ran `bun install`
+- ran `bun run build`
+- ran `bun run dev`
+- wrote and ran `/tmp/canary-rls-check.ts` using `@supabase/supabase-js` with `persistSession: false`
+- outcome: canary removes the previous SQL prepare crash, but employer application select through the correlated subquery policy still returns zero rows
+
+### 2026-04-24T11:01Z - test newer canary for correlated RLS subquery
+- user requested testing `lite-supa@0.3.1-canary-20260424105602-24f92a3`
+- kept the restored correlated `exists (select 1 ...)` employer application policies from the prior test
+- changed `package.json` to the newer canary version
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-24f92a3.db` to avoid stale migration/data state
+- ran `bun install`
+- ran `bun run build`
+- ran `bun run dev`
+- reran `/tmp/canary-rls-check.ts` using `@supabase/supabase-js` with `persistSession: false`
+- outcome: passed; employer select returned the seeker application through the correlated RLS subquery policy

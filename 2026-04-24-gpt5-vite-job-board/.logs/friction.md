@@ -278,3 +278,102 @@ bun pm view lite-supa version
 - what should have happened: follow the README command literally, `npm install lite-supa`, or use Bun's equivalent to add the package without guessing a version
 - why it matters: this was not caused by unclear package publishing; it was caused by adding an unverified version pin during manual scaffold
 - suggested improvement: harness instructions should explicitly say "when docs say `npm install <package>`, do not invent a version; run the install/add command or query the registry first"
+
+### 2026-04-24T09:36Z - canary partially fixes correlated RLS subquery [major]
+- tested version: `lite-supa@0.3.1-canary-20260424093343-3d07a7e`
+- expected: restoring the original employer policy with `exists (select 1 from job_listings ...)` lets employers select applications for their own jobs
+- actual: the previous SQL prepare crash is gone, but the employer select returns `[]` even though the row exists and a direct SQL `exists` predicate matches
+- app policy under test:
+
+```sql
+create policy applications_select_employer on applications
+   for select
+   to authenticated
+   using (
+      exists (
+         select 1 from job_listings
+         where job_listings.id = applications.job_id
+         and job_listings.employer_id = auth.uid()
+      )
+   );
+```
+
+- verification script result:
+
+```json
+{
+  "employerJobs": [
+    {
+      "id": 6,
+      "employer_id": "019dbedd-af14-734a-9290-7ca0ab245588",
+      "title": "Canary Backend Engineer"
+    }
+  ],
+  "employerApplications": [],
+  "seekerApplications": [
+    {
+      "id": 3,
+      "job_id": 6,
+      "seeker_id": "019dbedd-af57-77cd-95fc-847c04d2f796",
+      "applicant_name": "Canary Seeker",
+      "status": "submitted"
+    }
+  ],
+  "applicationCount": 0
+}
+```
+
+- direct SQL evidence that the row and predicate are valid:
+
+```text
+Executing: select applications.id from applications where exists (select 1 from job_listings where job_listings.id = applications.job_id and job_listings.employer_id = '019dbedc-0089-70e6-b57d-a04701f153d8')
+{ rows: [ { id: 1 } ] }
+```
+
+- interpretation: canary appears to fix the `select "1"` syntax/prepare failure but not the correlated policy visibility semantics for this app
+- suggested improvement: add a regression test where authenticated user A owns a parent row, user B owns a child row, and user A can select the child row through an `exists` RLS policy over the parent table
+
+### 2026-04-24T11:01Z - newer canary fixes correlated RLS subquery [major]
+- tested version: `lite-supa@0.3.1-canary-20260424105602-24f92a3`
+- expected: employer can select applications for their own jobs through the restored correlated `exists (select 1 from job_listings ...)` RLS policy
+- actual: passed; both employer and seeker selects returned the same application row
+- verification script result:
+
+```json
+{
+  "insertedJob": {
+    "id": 4,
+    "employer_id": "019dbf29-1d83-75ab-824a-4770149b5af7",
+    "title": "Canary Backend Engineer"
+  },
+  "employerJobs": [
+    {
+      "id": 4,
+      "employer_id": "019dbf29-1d83-75ab-824a-4770149b5af7",
+      "title": "Canary Backend Engineer"
+    }
+  ],
+  "employerApplications": [
+    {
+      "id": 1,
+      "job_id": 4,
+      "seeker_id": "019dbf29-1dd1-7678-9804-c203e4ef270c",
+      "applicant_name": "Canary Seeker",
+      "status": "submitted"
+    }
+  ],
+  "seekerApplications": [
+    {
+      "id": 1,
+      "job_id": 4,
+      "seeker_id": "019dbf29-1dd1-7678-9804-c203e4ef270c",
+      "applicant_name": "Canary Seeker",
+      "status": "submitted"
+    }
+  ],
+  "applicationCount": 1
+}
+```
+
+- interpretation: `0.3.1-canary-20260424105602-24f92a3` fixes the previously logged correlated RLS subquery friction for this app's employer application overview path
+- suggested improvement: keep the regression test described in `2026-04-24T09:36Z` so this behavior stays covered before release

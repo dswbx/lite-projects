@@ -94,7 +94,13 @@ create policy applications_select_seeker on applications
 create policy applications_select_employer on applications
    for select
    to authenticated
-   using (employer_id = auth.uid());
+   using (
+      exists (
+         select 1 from job_listings
+         where job_listings.id = applications.job_id
+         and job_listings.employer_id = auth.uid()
+      )
+   );
 
 create policy applications_insert_seeker on applications
    for insert
@@ -104,4 +110,10 @@ create policy applications_insert_seeker on applications
 create policy applications_update_employer on applications
    for update
    to authenticated
-   using (employer_id = auth.uid());
+   using (
+      exists (
+         select 1 from job_listings
+         where job_listings.id = applications.job_id
+         and job_listings.employer_id = auth.uid()
+      )
+   );
