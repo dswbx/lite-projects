@@ -31,3 +31,9 @@
 - vite config loads; `bun dev` boots; sqlite db provisioned (6 tables / 5 policies)
 - verified: `GET /` → 200, `GET /rest/v1/todos` → 200
 - resolution: both the eager-driver-import issue and the node-build self-import are gone on this canary
+
+### 2026-04-24T09:00Z — FIXED in lite-supa@0.3.0-canary-20260424070306-29f2906: types for `lite-supa/vite`
+- retested 2026-04-23T20:05Z friction
+- `node_modules/lite-supa/package.json` now declares `"./vite"` with `"types": "./dist/vite/index.d.ts"`; `dist/vite/index.d.ts` present
+- `bunx tsc --noEmit` → exit 0 (previously: `Could not find a declaration file for module 'lite-supa/vite'`)
+- resolution: upstream shipped types export condition; import is properly typed

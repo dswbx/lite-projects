@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.97.0",
-    "lite-supa": "0.3.0-canary-20260423192442-46c4f17",
+    "lite-supa": "0.3.0-canary-20260424070306-29f2906",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

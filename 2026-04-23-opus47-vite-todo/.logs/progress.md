@@ -50,3 +50,9 @@
 - `bun dev` boots, vite ready in 1.65s, sqlite db provisioned (6 tables / 5 policies)
 - curl: `/` → 200, `/rest/v1/todos` → 200
 - outcome: ok — both prior frictions resolved on this canary
+
+### 2026-04-24T09:00Z — retest types on canary 29f2906
+- bumped lite-supa → 0.3.0-canary-20260424070306-29f2906
+- `bunx tsc --noEmit` → exit 0
+- `lite-supa/vite` now resolves types via package `exports.types`
+- outcome: ok, types friction resolved
