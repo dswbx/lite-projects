@@ -177,3 +177,37 @@
 - reran `/tmp/canary-rls-check.ts` to confirm the correlated RLS subquery fix still passes
 - ran `bunx lite-supa exec "select id, title, length(responsibilities) as responsibility_chars, status from job_listings order by id limit 3"` to confirm multiline seed still passes
 - outcome: passed; anonymous and authenticated clients both saw the three published seeded jobs with the `TO` clause omitted
+
+### 2026-04-24T14:04Z - test canary for missing jwt_secret detection
+- user requested testing `lite-supa@0.3.1-canary-20260424140128-7a25550` for the `jwt_secret` friction
+- changed `package.json` to the canary version
+- removed `[auth].jwt_secret` from `supabase/config.toml`
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-jwt-7a25550.db` to avoid stale migration/data state
+- expected: `bun run dev` should fail early with a clear missing `jwt_secret` config error instead of allowing runtime signup failure
+- ran `bun install`
+- ran `bun run build`
+- ran `bun run dev`
+- observed: dev server started successfully instead of failing early
+- wrote and ran `/tmp/canary-jwt-check.ts` to attempt `supabase.auth.signUp(...)`
+- observed: signup returned `hasUser: true`, `hasSession: true`, and `error: null` without `jwt_secret`
+- outcome: expected early detection did not occur; missing `jwt_secret` is accepted in this canary
+
+### 2026-04-24T14:53Z - test canary for seed rollback on failure
+- user requested testing `lite-supa@0.3.2-canary-20260424145054-66076de` for the mid-seed failure friction
+- changed `package.json` to the canary version
+- restored `[auth].jwt_secret` so auth config does not confound startup
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-seed-rollback-66076de.db` to avoid stale migration/data state
+- created `/tmp/canary-seed-rollback.sql` with one valid insert followed by `insert into missing_table (id) values (1)`
+- temporarily changed `[db.seed].sql_paths` to the failing `/tmp/canary-seed-rollback.sql`
+- expected: `bun run dev` should fail with a clear seed error and roll back the first valid seed insert
+- ran `bun install`
+- ran `bun run dev`
+- observed: dev failed with `Seed failed and was rolled back: no such table: missing_table` and a `bun run dev --recreate` recovery hint
+- ran `bunx lite-supa exec "select id, title from job_listings where title = 'Rollback Should Disappear'"`
+- observed: rollback row query returned `[]`
+- restored `[db.seed].sql_paths` to `["./seed.sql"]`
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-seed-ok-66076de.db` for a clean success check
+- ran `bun run build`
+- reran `bun run dev`
+- ran `bunx lite-supa exec "select count(*) as job_count from job_listings"`
+- outcome: passed; failed seed rolled back the first insert, and the normal app seed still inserted three rows

@@ -466,3 +466,78 @@ create policy job_listings_select_published on job_listings
 
 - regression checks: multiline seed still passed with three rows inserted, and `/tmp/canary-rls-check.ts` still passed with `applicationCount: 1`
 - interpretation: `0.3.1-canary-20260424114733-a4f80a0` fixes the previously logged omitted `TO` policy friction while retaining the multiline seed and correlated RLS subquery fixes
+
+### 2026-04-24T14:04Z - jwt_secret canary does not fail early [major]
+- tested version: `lite-supa@0.3.1-canary-20260424140128-7a25550`
+- expected: missing `[auth].jwt_secret` should be detected during startup with a clear config error
+- actual: `bun run dev` started successfully, applied schema, seeded data, and served Vite
+- config under test:
+
+```toml
+[auth]
+enabled = true
+jwt_expiry = 3600
+enable_signup = true
+```
+
+- startup output excerpt:
+
+```text
+Using config file: ./supabase/config.toml
+ ➜ Database located at file:./supabase/.temp/worklane-canary-jwt-7a25550.db
+
+[ DATA ] tables: 8 / columns: 93 / indexes: 11
+[ AUTH ] enabled: ✓ / tables: 3 / policies: 11
+
+  VITE v7.3.2  ready in 246 ms
+```
+
+- signup check result:
+
+```json
+{
+  "hasUser": true,
+  "hasSession": true,
+  "error": null
+}
+```
+
+- interpretation: this canary does not implement the expected early missing-`jwt_secret` detection; it appears to accept missing `jwt_secret` and still issue sessions
+- suggested improvement: if explicit secrets remain required for safe local auth, fail startup before schema/seed with a message naming `[auth].jwt_secret`; if a dev default is intentional, emit a visible warning and update docs to explain the default
+
+### 2026-04-24T14:53Z - seed rollback canary fixes partial seed state [major]
+- tested version: `lite-supa@0.3.2-canary-20260424145054-66076de`
+- expected: when seed execution fails after an earlier seed statement succeeds, Supabase Lite should roll back prior seed statements and print a useful recovery notice
+- actual: passed; dev startup failed with an explicit rollback message, the first seed row was not present afterward, and normal seeding still worked after restoring `seed.sql`
+- failing seed file used for test:
+
+```sql
+insert into job_listings (employer_id, title, company_name, location, remote_type, employment_type, salary_min, salary_max, currency, summary, description, responsibilities, requirements, benefits, interview_process, contact_email, status) values (null, 'Rollback Should Disappear', 'Rollback Co', 'Remote', 'Remote', 'Full-time', 1, 2, 'USD', 'This row should be rolled back.', 'This seed intentionally fails after this insert.', 'One', 'Two', 'Three', 'Four', 'rollback@example.test', 'published');
+insert into missing_table (id) values (1);
+```
+
+- startup failure output:
+
+```text
+Seeding database...
+Failed to execute statement: insert into missing_table (id) values (1)
+error when starting dev server:
+Error: Seed failed and was rolled back: no such table: missing_table
+Fix `supabase/seed.sql`, then run `bun run dev --recreate` to reset and reseed.
+```
+
+- rollback verification:
+
+```text
+Executing: select id, title from job_listings where title = 'Rollback Should Disappear'
+{ rows: [] }
+```
+
+- normal seed verification after restoring `[db.seed].sql_paths = ["./seed.sql"]`:
+
+```text
+Executing: select count(*) as job_count from job_listings
+{ rows: [ { job_count: 3 } ] }
+```
+
+- interpretation: `0.3.2-canary-20260424145054-66076de` fixes the partial seed state friction by rolling back failed seed batches and telling the user how to recover
