@@ -67,7 +67,6 @@ create policy profiles_update_own on profiles
 
 create policy job_listings_select_published on job_listings
    for select
-   to anon, authenticated
    using (status = 'published');
 
 create policy job_listings_select_employer on job_listings

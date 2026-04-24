@@ -162,3 +162,18 @@
 - ran `bunx lite-supa exec "select responsibilities from job_listings where id = 1"`
 - reran `/tmp/canary-rls-check.ts` to confirm the previous correlated RLS subquery fix still passes
 - outcome: passed; multi-line seed statements inserted all three rows and preserved newline-separated string values
+
+### 2026-04-24T11:50Z - test canary for omitted TO policy clause
+- user requested testing `lite-supa@0.3.1-canary-20260424114733-a4f80a0` for the RLS `TO` friction
+- changed `package.json` to the canary version
+- removed explicit `to anon, authenticated` from `job_listings_select_published`
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-to-a4f80a0.db` to avoid stale migration/data state
+- assumed: prior fixes should be regression-checked by keeping the multiline seed and correlated application RLS policy in place
+- ran `bun install`
+- ran `bun run build`
+- ran `bun run dev`
+- observed Supabase Lite warning that omitted `TO` applies to all roles and recommends explicit roles for clarity
+- wrote and ran `/tmp/canary-to-check.ts` using `@supabase/supabase-js` with `persistSession: false`
+- reran `/tmp/canary-rls-check.ts` to confirm the correlated RLS subquery fix still passes
+- ran `bunx lite-supa exec "select id, title, length(responsibilities) as responsibility_chars, status from job_listings order by id limit 3"` to confirm multiline seed still passes
+- outcome: passed; anonymous and authenticated clients both saw the three published seeded jobs with the `TO` clause omitted

@@ -426,3 +426,43 @@ responsibilities: 'Own end-to-end design for core workflows\n' +
 
 - regression check: reran `/tmp/canary-rls-check.ts`; correlated RLS subquery still passed with `applicationCount: 1`
 - interpretation: `0.3.1-canary-20260424111126-c4e4d21` fixes the previously logged seed runner line-by-line execution friction and retains the correlated RLS fix
+
+### 2026-04-24T11:50Z - omitted TO canary fixes public policy semantics [minor]
+- tested version: `lite-supa@0.3.1-canary-20260424114733-a4f80a0`
+- expected: when a `create policy` omits the `TO` clause, it should apply to all roles (`PUBLIC`) so anonymous and authenticated users can both read published jobs
+- actual: passed; anonymous and authenticated Supabase JS clients both selected the three seeded published jobs
+- policy under test:
+
+```sql
+create policy job_listings_select_published on job_listings
+   for select
+   using (status = 'published');
+```
+
+- startup warning:
+
+```text
+[supalite] policy "job_listings_select_published" on "job_listings" has no TO clause — applies to all roles (PUBLIC). For clarity, prefer: TO anon, authenticated.
+```
+
+- verification script result:
+
+```json
+{
+  "anonCount": 3,
+  "authenticatedCount": 3,
+  "anonJobs": [
+    { "id": 1, "title": "Product Designer", "status": "published" },
+    { "id": 2, "title": "Backend Engineer", "status": "published" },
+    { "id": 3, "title": "Customer Success Lead", "status": "published" }
+  ],
+  "authenticatedJobs": [
+    { "id": 1, "title": "Product Designer", "status": "published" },
+    { "id": 2, "title": "Backend Engineer", "status": "published" },
+    { "id": 3, "title": "Customer Success Lead", "status": "published" }
+  ]
+}
+```
+
+- regression checks: multiline seed still passed with three rows inserted, and `/tmp/canary-rls-check.ts` still passed with `applicationCount: 1`
+- interpretation: `0.3.1-canary-20260424114733-a4f80a0` fixes the previously logged omitted `TO` policy friction while retaining the multiline seed and correlated RLS subquery fixes

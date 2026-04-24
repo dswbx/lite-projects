@@ -6,7 +6,7 @@
       "name": "job-board",
       "dependencies": {
         "@supabase/supabase-js": "^2.97.0",
-        "lite-supa": "0.3.1-canary-20260424111126-c4e4d21",
+        "lite-supa": "0.3.1-canary-20260424114733-a4f80a0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
       },
@@ -366,7 +366,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.32.0", "", { "os": "win32", "cpu": "x64" }, "sha512-Amq9B/SoZYdDi1kFrojnoqPLxYhQ4Wo5XiL8EVJrVsB8ARoC1PWW6VGtT0WKCemjy8aC+louJnjS7U18x3b06Q=="],
 
-    "lite-supa": ["lite-supa@0.3.1-canary-20260424111126-c4e4d21", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@supabase/pg-delta": "1.0.0-alpha.10", "commander": "^14.0.3", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-parser": "latest" }, "peerDependencies": { "@electric-sql/pglite": "0.4.1", "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite-supa": "dist/cli/index.js" } }, "sha512-UPSlgdQ036n6LG3qHQdb9VzZZDNJFiMqCEGpqSYVmeMG9xMQfjTBy+LYAGKHTY+LJdXuItlzul+gIpGjPPYvtw=="],
+    "lite-supa": ["lite-supa@0.3.1-canary-20260424114733-a4f80a0", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@supabase/pg-delta": "1.0.0-alpha.10", "commander": "^14.0.3", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-parser": "latest" }, "peerDependencies": { "@electric-sql/pglite": "0.4.1", "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite-supa": "dist/cli/index.js" } }, "sha512-RUNZuE7fnXfdg6yoK7Ob2haYgLBk5Mo852YLTW2hv5gzqBMWYJM8UA0SyZXLBg9XLFIeLs0lI4VtJ01oJ1Bq2Q=="],
 
     "long": ["long@5.3.2", "", {}, "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="],
 
