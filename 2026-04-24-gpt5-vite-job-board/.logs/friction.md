@@ -377,3 +377,52 @@ Executing: select applications.id from applications where exists (select 1 from 
 
 - interpretation: `0.3.1-canary-20260424105602-24f92a3` fixes the previously logged correlated RLS subquery friction for this app's employer application overview path
 - suggested improvement: keep the regression test described in `2026-04-24T09:36Z` so this behavior stays covered before release
+
+### 2026-04-24T11:16Z - seed parser canary fixes multiline seed SQL [major]
+- tested version: `lite-supa@0.3.1-canary-20260424111126-c4e4d21`
+- expected: normal multi-line SQL seed statements with multi-line quoted string values should apply during `bun run dev`
+- actual: passed; dev server started, seed ran, all three job listings were inserted, and newline-separated text was preserved
+- seed shape under test:
+
+```sql
+insert into job_listings (
+   employer_id,
+   title,
+   company_name,
+   responsibilities
+) values
+(
+   null,
+   'Product Designer',
+   'Northstar Labs',
+   'Own end-to-end design for core workflows
+Run user interviews and synthesize insights
+Create polished prototypes for product reviews
+Partner with engineers through delivery'
+);
+```
+
+- row-count evidence:
+
+```text
+Executing: select id, title, length(responsibilities) as responsibility_chars, status from job_listings
+{
+  rows: [
+    { id: 1, title: 'Product Designer', responsibility_chars: 171, status: 'published' },
+    { id: 2, title: 'Backend Engineer', responsibility_chars: 158, status: 'published' },
+    { id: 3, title: 'Customer Success Lead', responsibility_chars: 153, status: 'published' }
+  ]
+}
+```
+
+- newline preservation evidence:
+
+```text
+responsibilities: 'Own end-to-end design for core workflows\n' +
+  'Run user interviews and synthesize insights\n' +
+  'Create polished prototypes for product reviews\n' +
+  'Partner with engineers through delivery'
+```
+
+- regression check: reran `/tmp/canary-rls-check.ts`; correlated RLS subquery still passed with `applicationCount: 1`
+- interpretation: `0.3.1-canary-20260424111126-c4e4d21` fixes the previously logged seed runner line-by-line execution friction and retains the correlated RLS fix

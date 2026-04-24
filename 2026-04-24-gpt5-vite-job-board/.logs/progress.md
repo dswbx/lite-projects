@@ -149,3 +149,16 @@
 - ran `bun run dev`
 - reran `/tmp/canary-rls-check.ts` using `@supabase/supabase-js` with `persistSession: false`
 - outcome: passed; employer select returned the seeker application through the correlated RLS subquery policy
+
+### 2026-04-24T11:16Z - test canary for multiline seed SQL
+- user requested testing `lite-supa@0.3.1-canary-20260424111126-c4e4d21` for the `seed.sql` friction
+- changed `package.json` to the seed parser canary version
+- changed `supabase/seed.sql` from one complete insert per line back to normal multi-line SQL statements with multi-line string values
+- changed Supabase Lite DB path to `supabase/.temp/worklane-canary-seed-c4e4d21.db` to avoid stale migration/data state
+- ran `bun install`
+- ran `bun run build`
+- ran `bun run dev`
+- ran `bunx lite-supa exec "select id, title, length(responsibilities) as responsibility_chars, status from job_listings"`
+- ran `bunx lite-supa exec "select responsibilities from job_listings where id = 1"`
+- reran `/tmp/canary-rls-check.ts` to confirm the previous correlated RLS subquery fix still passes
+- outcome: passed; multi-line seed statements inserted all three rows and preserved newline-separated string values
