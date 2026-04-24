@@ -34,6 +34,36 @@ Example: `2026-04-22-opus47-vite-todo`
 
 Model shorthand: `opus47`, `sonnet46`, `haiku45`, `gpt5.4`, etc. Keep terse.
 
+## Model attribution
+
+Each run uses two model identifiers:
+
+- **Slug/log model**: short and filesystem-friendly, used in `<slug>` and `.logs/progress.md`.
+- **Commit trailer**: exact Git co-author identity, used only when the human approves a commit.
+
+Do not infer the commit trailer from the slug, product name, UI label, API model id, or agent name alone. Use the table below when it applies.
+
+If the provider/model is not listed, the agent must determine the trailer before committing:
+
+1. Check its runtime/session context for the exact provider, product, agent, and model identity.
+2. Search authoritative sources, such as provider docs, release docs, or repository instructions, for the correct Git co-author name and email.
+3. Use GitHub's co-author format: `Co-authored-by: name <name@example.com>`. GitHub requires a name and email for each co-author: https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors
+4. Log the source or reasoning used in `.logs/progress.md` before committing.
+5. If the trailer still cannot be determined with confidence, stop before committing and ask the human for help resolving it. Do not invent a noreply address or normalize the model name yourself.
+
+Example for an unlisted run after checking context and docs:
+
+```text
+I am about to commit a run made with Cursor Composer 2. It is not listed in AGENTS.md, and I could not verify an official co-author trailer from local context or provider docs.
+What exact co-author trailer should I use? GitHub format:
+Co-authored-by: <display name> <email>
+```
+
+| Provider / model | Slug/log model | Commit trailer |
+| --- | --- | --- |
+| Codex GPT 5.5 | `gpt5.5` | `Co-Authored-By: GPT 5.5 <codex@openai.com>` |
+| Claude Opus 4.7 | `opus47` | `Co-authored-by: claude-opus-4-7 <noreply@anthropic.com>` |
+
 ## Logging protocol
 
 Every run MUST create `<slug>/.logs/` with four files. Append-only — never delete, correct via new entry referencing the prior one.
@@ -166,13 +196,8 @@ const { data } = await supabase.from("todos").select();
 
 - **Do not commit.** When the run is done, present the work to the human: slug path, what was built, how to run it, notable friction/wins.
 - Wait for explicit human approval before committing.
-- On approval, commit the generated project and its logs together (one commit per run) with attribution trailer:
-
-  ```
-  Co-authored-by: <model-name> <mode-email-address>
-  ```
-
-  Use the actual model identifier for the run (e.g. `claude-opus-4-7`).
+- On approval, commit the generated project and its logs together (one commit per run).
+- Add the exact attribution trailer from the **Model attribution** table above. If the model is not listed, ask the human for the exact trailer before committing.
 
 ## Project README (`<slug>/README.md`)
 
