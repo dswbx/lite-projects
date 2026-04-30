@@ -8,3 +8,4 @@ build/
 .conductor
 .idea
 **/supabase/.temp
+.claude/worktrees
