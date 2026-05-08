@@ -134,9 +134,7 @@ error from `bun dev`:
 ​```
 ```
 
-Severity tags: `[blocker]`, `[major]`, `[minor]`. Resolution tag: `[resolved]` on a correction entry closes the linked issue at next publish.
-
-At publish, each entry gets an `- issue: <url>` line appended under the H3. Agents must not pre-write this line — it is added by the publish step (see **Filing frictions as issues**).
+Severity tags: `[blocker]`, `[major]`, `[minor]`. Resolution tag: `[resolved]` on a correction entry closes the linked issue at next publish (see **Filing frictions as issues**).
 
 ### `wins.md`
 Appreciation log. What felt easy, obvious, or delightful from an LLM's perspective. Equal in weight to `friction.md` — we need to know exactly what to double down on, not just what to fix.
@@ -210,20 +208,20 @@ After human approval and as part of publish, each `friction.md` entry is filed a
 
 For each H3 entry in `friction.md`:
 
-1. `gh issue create --repo dswbx/lite-projects --title "<title>" --label <severity> --body <entry + permalink>`
-   - title = H3 with the leading `<ISO timestamp> — ` stripped (GitHub's creation date + permalink already carry the temporal info). Severity tag stays in the title.
-   - severity label is one of `blocker`, `major`, `minor` from the entry's tag. Create the label if missing: `gh label create <severity> --repo dswbx/lite-projects --force`.
-   - body is the entry contents followed by a permalink to the entry on the publish commit, e.g. `https://github.com/dswbx/lite-projects/blob/<sha>/<slug>/.logs/friction.md#L<n>-L<m>`.
-2. Append `- issue: <url>` directly under the H3 in `friction.md`. Commit this follow-up (one commit per publish round).
+`gh issue create --repo dswbx/lite-projects --title "<title>" --label <severity> --body <entry + permalink>`
 
-Flow: publish commit → `gh issue create` per entry → second commit writing URLs back.
+- title = H3 with the leading `<ISO timestamp> — ` stripped (GitHub's creation date + permalink already carry the temporal info). Severity tag stays in the title.
+- severity label is one of `blocker`, `major`, `minor` from the entry's tag. Create the label if missing: `gh label create <severity> --repo dswbx/lite-projects --force`.
+- body is the entry contents followed by a permalink to the friction entry on the publish commit, e.g. `https://github.com/dswbx/lite-projects/blob/<sha>/<slug>/.logs/friction.md#L<n>-L<m>`. The `<sha>` is the publish commit (the one created seconds earlier) — the link works immediately and stays valid after PR merge.
+
+Flow: publish commit → `gh issue create` per entry. No back-link is written into `friction.md` (the issue → friction direction is enough; GitHub's issue search by title or commit ref covers the reverse lookup).
 
 ### Same-session follow-up (new canary builds)
 
 If the human asks the agent to retest with a new canary in the same session:
 
 1. Append correction entries to `friction.md` referencing the prior timestamp (existing convention). Do not edit the original entry.
-2. At next publish, for each correction entry: `gh issue comment <url> --body <correction body + permalink>` on the original entry's issue. One comment per canary; do not edit the issue body.
+2. At next publish, for each correction entry: `gh issue comment <url> --body <correction body + permalink>` on the original entry's issue. The agent recalls issue URLs from session context; if unavailable, look up via `gh issue list --repo dswbx/lite-projects --search "<title in quotes>"`. One comment per canary; do not edit the issue body.
 3. If the correction is tagged `[resolved]`, close the issue: `gh issue close <url> --comment <correction body>`.
 4. New frictions discovered on the canary file as new issues, same as first publish. The human directs which prior frictions to re-test; the agent does not re-run the full list.
 
