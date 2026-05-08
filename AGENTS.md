@@ -210,7 +210,8 @@ After human approval and as part of publish, each `friction.md` entry is filed a
 
 For each H3 entry in `friction.md`:
 
-1. `gh issue create --repo dswbx/lite-projects --title "<H3 verbatim>" --label <severity> --body <entry + permalink>`
+1. `gh issue create --repo dswbx/lite-projects --title "<title>" --label <severity> --body <entry + permalink>`
+   - title = H3 with the leading `<ISO timestamp> — ` stripped (GitHub's creation date + permalink already carry the temporal info). Severity tag stays in the title.
    - severity label is one of `blocker`, `major`, `minor` from the entry's tag. Create the label if missing: `gh label create <severity> --repo dswbx/lite-projects --force`.
    - body is the entry contents followed by a permalink to the entry on the publish commit, e.g. `https://github.com/dswbx/lite-projects/blob/<sha>/<slug>/.logs/friction.md#L<n>-L<m>`.
 2. Append `- issue: <url>` directly under the H3 in `friction.md`. Commit this follow-up (one commit per publish round).
