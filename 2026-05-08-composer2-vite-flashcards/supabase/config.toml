@@ -1,0 +1,21 @@
+project_id = "flashcards-local"
+
+[api]
+port = 54321
+
+[db]
+driver = "sqlite-postgres"
+url = "file:./supabase/.temp/data.db"
+
+[db.migrations]
+schema_paths = ["./schemas/schema.sql"]
+
+[db.seed]
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+jwt_secret = "dev-secret-change-me"
+
+[auth.email]
+enable_confirmations = false
