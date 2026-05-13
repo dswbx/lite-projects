@@ -1,0 +1,22 @@
+[api]
+port = 54321
+max_rows = 1000
+
+[db]
+driver = "sqlite-postgres"
+url = "file:./supabase/.temp/data.db"
+
+# imperative migrations (not declarative schema)
+# files in supabase/migrations/*.sql are applied via `lite migration up`
+# the vite plugin also auto-applies them on boot
+[db.migrations]
+migration_paths = ["./migrations/*.sql"]
+
+[auth]
+enabled = true
+jwt_secret = "dev-secret-change-me-please-this-is-long-enough-to-be-valid"
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_confirmations = false
