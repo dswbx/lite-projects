@@ -14,12 +14,18 @@
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^5.0.0",
-        "lite-supa": "file:/Users/dennis/Documents/conductor/workspaces/lite/lite-172-pg-migrations/app/lite-supa-0.4.0.tgz",
+        "lite-supa": "file:/Users/dennis/Documents/conductor/workspaces/lite/lite-196-rls-update-policy-violation/app/lite-supa-0.4.0.tgz",
         "tailwindcss": "^4.0.0",
         "typescript": "^5.6.0",
         "vite": "^7.0.0",
       },
     },
+  },
+  "catalog": {
+    "@electric-sql/pglite": "0.4.5",
+    "kysely": "^0.28.11",
+    "libpg-query": "17.7.3",
+    "postgres": "^3.4.8",
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
@@ -454,7 +460,7 @@
 
     "lightningcss-win32-x64-msvc": ["lightningcss-win32-x64-msvc@1.32.0", "", { "os": "win32", "cpu": "x64" }, "sha512-Amq9B/SoZYdDi1kFrojnoqPLxYhQ4Wo5XiL8EVJrVsB8ARoC1PWW6VGtT0WKCemjy8aC+louJnjS7U18x3b06Q=="],
 
-    "lite-supa": ["lite-supa@/Users/dennis/Documents/conductor/workspaces/lite/lite-172-pg-migrations/app/lite-supa-0.4.0.tgz", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.10", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "commander": "^14.0.3", "dotenv": "^17.3.1", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-parser": "latest", "uuid": "^13.0.0" }, "peerDependencies": { "@electric-sql/pglite": "0.4.5", "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite": "./dist/cli/index.js" } }, "sha512-UF5McUVAw672bcfWmtjMVVYU/rLjnMC8ahRCd5BEXKOMCDBUA5EDBdrhmSzjbkdZS7Rx4cyUd3gO1pp+OgaXgg=="],
+    "lite-supa": ["lite-supa@/Users/dennis/Documents/conductor/workspaces/lite/lite-196-rls-update-policy-violation/app/lite-supa-0.4.0.tgz", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.10", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "commander": "^14.0.3", "dotenv": "^17.3.1", "kysely": "catalog:", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "catalog:", "pgsql-parser": "latest", "uuid": "^13.0.0" }, "peerDependencies": { "@electric-sql/pglite": "catalog:", "@supabase/supabase-js": ">=2.90.0", "postgres": "catalog:", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" }, "optionalPeers": ["@electric-sql/pglite", "postgres", "vite"], "bin": { "lite": "./dist/cli/index.js" } }, "sha512-vv6rrko0BDiNlYtCbDEoJWluJxizFrvE2uO3TX5WXVVUTwZ1LInFY2OkQ22xYuX4O7uwGg1rBcTsIxie0gOr1w=="],
 
     "long": ["long@5.3.2", "", {}, "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="],
 

@@ -81,3 +81,14 @@
 - `bun dev` cold boot: `[ AUTH ] policies: 8` straight from `migration_paths`, no `Migration error: DataLossError` line on either first or second boot. Two-user + anon RLS isolation test passes.
 - friction.md updated with a `[resolved]` entry referencing 2026-05-13T15:45Z and the cosmetic carryover. All five frictions originally filed are now resolved against the canary.
 - ended: 2026-05-13T17:53Z
+
+### 2026-05-13T18:05Z — split migrations into multiple files
+- replaced the single init migration with three logically-separated files (folders / bookmarks / RLS) plus a fourth additive migration that adds `archived boolean` to bookmarks. Reset DB, ran `bun dev`, verified each was applied in order with `lite migration list`. Applied the additive one on top of existing data without touching the rest. SELECT/INSERT/DELETE + RLS isolation all still work across the split.
+
+### 2026-05-13T18:06Z — discovered UPDATE-on-RLS bug while testing the split
+- not related to the split itself. UPDATEs against RLS-protected tables always return `PolicyViolation`, even when both USING and WITH CHECK trivially pass (verified by SELECT-ing the same row with the same JWT immediately before). Same outcome for bookmarks.title, bookmarks.archived, and folders.name. INSERT under the same WITH CHECK works.
+- filed new [blocker] friction entry at 2026-05-13T18:06Z. The UI's folder-rename / move-to-folder paths would hit this; suggest opening a follow-up PR after this one.
+
+### 2026-05-13T19:30Z — retest UPDATE-RLS against `lite-196-rls-update-policy-violation` canary
+- pointed `lite-supa` `file:` ref at the new tarball, reinstalled, re-ran the UPDATE test sequence from `/tmp/test-update.sh`. All four scenarios (patch title, patch archived, patch folder name, cross-user attempt) now return the expected results: owner-updates succeed and return the updated row; cross-user PATCH is correctly excluded by USING (returns `[]`) rather than raising the misleading PolicyViolation. UPDATE-RLS friction (2026-05-13T18:06Z) marked resolved.
+- two side effects of the new tarball worth filing as their own frictions and added: (a) `kysely` / `libpg-query` declared as `catalog:` deps that don't resolve outside the monorepo (worked around by adding a `workspaces.catalog` block in our `package.json`), (b) `[db.migrations].migration_paths` config key removed without a deprecation alias — migrations dir is now hard-coded by driver.

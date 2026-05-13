@@ -9,8 +9,8 @@ url = "file:./supabase/.temp/data.db"
 # imperative migrations (not declarative schema)
 # files in supabase/migrations/*.sql are applied via `lite migration up`
 # the vite plugin also auto-applies them on boot
-[db.migrations]
-migration_paths = ["./migrations/*.sql"]
+# imperative migrations live in supabase/migrations/*.sql (default for
+# postgres-family drivers). no extra config needed.
 
 [auth]
 enabled = true

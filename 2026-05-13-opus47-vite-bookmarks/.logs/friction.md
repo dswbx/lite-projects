@@ -168,3 +168,156 @@ migration_paths = ["./migrations/*.sql"]
 - net result of this retest: **all frictions filed against the original tarball are now resolved** for the imperative-migrations + vite-plugin flow. Project no longer has any workaround in `config.toml`, `package.json` scripts, or `supabase/migrations/`. End-to-end smoke (fresh install → first boot → signup → insert → second boot → cross-user + anon isolation) all clean.
 - versions: lite-supa@0.4.0 (canary mtime 2026-05-13T19:50 local), bun@1.3.13, @supabase/supabase-js@2.105.4
 
+### 2026-05-13T18:05Z — splitting migrations into separate files works
+- post-merge ask from the human: split the single init migration into multiple files and verify. Replaced `supabase/migrations/20260513150000_init_bookmarks.sql` with four files:
+  ```
+  20260513150000_create_folders.sql
+  20260513150100_create_bookmarks.sql
+  20260513150200_enable_rls.sql
+  20260513160000_add_archived_to_bookmarks.sql   # additive, applied after the first three on top of existing data
+  ```
+- cold-boot `bun dev` from empty DB:
+  ```
+   ✓ Applied 20260513150000_create_folders.sql
+   ✓ Applied 20260513150100_create_bookmarks.sql
+   ✓ Applied 20260513150200_enable_rls.sql
+  [ DATA ] tables: 7 / columns: 79 / indexes: 16
+  [ AUTH ] enabled: ✓ / tables: 2 / policies: 8
+  ```
+  Then inserted a row as user1 via REST, dropped the dev server, added the fourth migration on disk, ran `bunx lite migration up`:
+  ```
+   ✓ Applied 20260513160000_add_archived_to_bookmarks.sql
+  ```
+  Existing row preserved (`select id, title, archived from bookmarks` returned the original row with `archived = 0`). Subsequent `bun dev` boot: `[ DATA ] tables: 7 / columns: 80 / indexes: 17` (+1 column, +1 index from the additive migration), policies still 8.
+- `lite migration list` correctly shows ordering and applied/pending state per file:
+  ```
+  Migrations in ./migrations:
+    [applied] 20260513150000_create_folders.sql
+    [applied] 20260513150100_create_bookmarks.sql
+    [applied] 20260513150200_enable_rls.sql
+    [applied] 20260513160000_add_archived_to_bookmarks.sql
+  ```
+- RLS for SELECT and INSERT still isolates correctly across the split (two-user + anon test passes).
+- conclusion: splitting migrations is a viable and well-supported flow. No additional workaround required.
+
+### 2026-05-13T18:06Z — UPDATE on RLS-protected tables always returns PolicyViolation [blocker]
+- *new* friction surfaced while exercising the split migrations above. Independent of the split — same DDL ran in the same order via the same migrator. We just hadn't curl-tested UPDATEs in prior rounds (the UI's folder-rename / bookmark-move paths would have hit this too).
+- expected: `PATCH /rest/v1/<table>?<filter>` as the authenticated owner of the row should succeed when both the USING clause (`auth.uid() = user_id`) and the WITH CHECK clause (`auth.uid() = user_id`, unchanged) are satisfied.
+- actual: every UPDATE returns `PolicyViolation` regardless of which column is being changed and even when the row already passes USING:
+  ```
+  $ # JWT sub: 019e2284-0ec8-748b-98b4-ba5768dfcf6e
+  $ curl -s "http://localhost:5173/rest/v1/bookmarks?select=id,user_id,archived" \
+      -H "apikey: local-anon-key" -H "Authorization: Bearer $TOK"
+  [{"id":"49769818-...","user_id":"019e2284-0ec8-748b-98b4-ba5768dfcf6e","archived":0}]
+
+  $ # SELECT passes RLS, so the row exists and is visible to the JWT subject.
+  $ # Now PATCH the same row, only touching `archived`:
+  $ curl -s -X PATCH "http://localhost:5173/rest/v1/bookmarks?id=eq.49769818-..." \
+      -H "Content-Type: application/json" \
+      -H "apikey: local-anon-key" -H "Authorization: Bearer $TOK" \
+      -H "Prefer: return=representation" \
+      -d '{"archived":true}'
+  {"code":"SUP","details":null,"hint":null,"message":"PolicyViolation: new row violates row-level security policy for table \"bookmarks\""}
+  ```
+- same outcome for:
+  - `PATCH bookmarks` setting only `title` (no user_id change)
+  - `PATCH folders` setting only `name` (no user_id change)
+- INSERT, SELECT, and DELETE on the same rows under the same policies all work correctly. The bug appears to be UPDATE-specific.
+- policy in question (from `20260513150200_enable_rls.sql`):
+  ```sql
+  create policy "bookmarks can be updated by owner" on bookmarks
+    for update to authenticated
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
+  ```
+- hypothesis: the SQLite RLS query-rewrite path is either (a) evaluating WITH CHECK against the *pre-update* row but with a different binding for `auth.uid()` than the one used in USING/SELECT, or (b) coercing the post-update `user_id` value (uuid bytes vs string) so the equality check fails. INSERT works under the same `with check (auth.uid() = user_id)` predicate, which suggests it's specifically the UPDATE rewrite path.
+- impact: any app with editable rows (folder rename, bookmark move-to-folder, archive toggle, profile updates, etc.) is unusable. This blocks the rename/move features in the bookmark manager UI shipped in this PR.
+- versions: lite-supa@0.4.0 (canary mtime 2026-05-13T19:50 local), bun@1.3.13, @supabase/supabase-js@2.105.4, sqlite-postgres driver
+- repro: clone the project as of this commit, `bun install`, `bun dev`, then run the curl sequence above (sign up → insert via authenticated POST → PATCH same row → observe PolicyViolation). DB driver is `sqlite-postgres` per `supabase/config.toml`.
+- suggested investigation: trace the AST-rewrite for `update ... where ...` against an RLS-enabled table on the `sqlite-postgres` driver. Compare against the `insert` path that succeeds with an identical `with check` predicate. A unit test along the lines of "owner can update own row" would have caught this.
+
+### 2026-05-13T19:30Z — retest against `lite-196-rls-update-policy-violation` canary
+- new tarball location: `/Users/dennis/Documents/conductor/workspaces/lite/lite-196-rls-update-policy-violation/app/lite-supa-0.4.0.tgz` (sha1 `878e1071c4391e004267a2950cf28d36f4afb574`, `dist/index.js` sha1 differs from prior canary). Updated `package.json` `lite-supa` `file:` reference accordingly.
+- 2026-05-13T18:06Z (UPDATE on RLS-protected tables returns PolicyViolation) — **[resolved]**.
+  - same `bun dev` + same `supabase/migrations/*.sql` + same JWT, all four previously-failing scenarios now return updated rows instead of PolicyViolation:
+    ```
+    --- patch title only:
+    [{"id":"0f255330-...","title":"renamed","archived":0,...}]
+    --- patch archived only:
+    [{"id":"0f255330-...","title":"renamed","archived":1,...}]
+    --- patch folders.name:
+    [{"id":"cb978608-...","name":"work-renamed",...}]
+    --- cross-user PATCH (correctly excluded by USING, not a PolicyViolation):
+    []
+    ```
+  - cross-user update now correctly behaves like Postgres: the USING filter eliminates the row from the update set so the response is `[]` rather than the misleading "PolicyViolation" the previous build threw. Verified by then querying the row as the owner: `title` is still the renamed value, not the would-be cross-user overwrite.
+  - confirms my prior hypothesis that the issue was specific to the UPDATE rewrite path on `sqlite-postgres`; INSERT/SELECT/DELETE were unaffected and remain so.
+
+### 2026-05-13T19:28Z — new tarball ships unresolved `catalog:` deps [major]
+- separate finding while installing the new canary above.
+- expected: `bun add lite-supa@<file:>.tgz` to install cleanly against the bun cache, like the previous canary did.
+- actual:
+  ```
+  $ bun install
+  error: kysely@catalog: failed to resolve
+  error: libpg-query@catalog: failed to resolve
+  ```
+- root cause: the new tarball's `package.json` lists several dependencies (and peer dependencies) with the bun `catalog:` protocol:
+  ```
+  $ python3 -c "import json; print(json.load(open('package/package.json'))['dependencies'])"
+  ...
+  'libpg-query': 'catalog:',
+  'kysely': 'catalog:',
+  ...
+  'peerDependencies': {
+    '@electric-sql/pglite': 'catalog:',
+    'postgres': 'catalog:',
+    ...
+  }
+  ```
+  `catalog:` is bun's workspace catalog protocol — versions are resolved from the workspace root's `workspaces.catalog`. That metadata exists in the lite-supa monorepo but is lost when the package is published as a standalone tarball. Outside that monorepo, bun has no way to resolve the version, so installs fail.
+- impact: any consumer of the published 0.4.0 tarball cannot run `bun install` without manually inventing a `workspaces.catalog` in their own root `package.json`. This blocks every fresh consumer install.
+- workaround I had to apply in this project's root `package.json`:
+  ```json
+  "workspaces": {
+    "catalog": {
+      "kysely": "^0.28.11",
+      "libpg-query": "17.7.3",
+      "@electric-sql/pglite": "0.4.5",
+      "postgres": "^3.4.8"
+    }
+  }
+  ```
+  Versions copied from the *previous* canary's resolved `dependencies` / `peerDependencies` block, since the new tarball no longer encodes them.
+- suggested improvement: resolve `catalog:` references to concrete versions at publish time. Bun's own publish flow has a flag for this; npm doesn't understand `catalog:` at all, so the published tarball must contain real versions. (See https://bun.sh/docs/install/catalogs for the publish behavior.)
+- versions: lite-supa@0.4.0 (canary sha1 `878e1071c4391e004267a2950cf28d36f4afb574`), bun@1.3.13
+
+### 2026-05-13T19:29Z — `[db.migrations]` schema dropped `migration_paths` without aliasing [minor]
+- separate finding while installing the new canary above.
+- expected: `[db.migrations] migration_paths = ["./migrations/*.sql"]` (the working config from the previous canary) to continue working in the new canary.
+- actual: config-load fails with a schema validation error and the dev script exits before vite starts:
+  ```
+  errors: [
+    {
+      keywordLocation: '/properties/db/properties/migrations/additionalProperties',
+      instanceLocation: '/db/migrations',
+      error: 'Additional properties are not allowed',
+      data: [Object]
+    }
+  ]
+  ```
+  i.e. `[db.migrations]` is now a `strictObject` accepting only `enabled` and `schema_paths` (per `dist/index.js` around the config-zod block ~line 2417).
+- new behavior: the migrations directory is now hard-coded by driver via `migrationGlob` in `dist/cli/index.js`:
+  ```js
+  function migrationGlob(app) {
+    return app.config?.db?.driver === "sqlite"
+      ? "./sqlite-migrations/*.sql"
+      : "./migrations/*.sql";
+  }
+  ```
+  No way to override.
+- impact: silently breaks any existing project that set `migration_paths` (e.g. this one, my prior PR, the bookmark-manager docs in the previous canary's `friction.md`). The error message is also misleading ("Additional properties are not allowed") — it does not tell the user that the property was removed and what to do instead.
+- workaround in this project: removed the `[db.migrations] migration_paths = [...]` line; the default `./migrations/*.sql` matches the project's existing directory layout.
+- suggested improvement: either keep `migration_paths` as a deprecated alias that warns on use, or have the validator emit a hint like "`db.migrations.migration_paths` was removed in 0.4.0-xxx — migrations are now discovered automatically under `supabase/migrations/` (or `supabase/sqlite-migrations/` for the `sqlite` driver)."
+- versions: lite-supa@0.4.0 (canary sha1 `878e1071c4391e004267a2950cf28d36f4afb574`)
+
