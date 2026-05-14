@@ -1,0 +1,9 @@
+[db]
+driver = "sqlite-postgres"
+url = "file:./supabase/.temp/data.db"
+
+[auth]
+enabled = true
+
+[auth.email]
+enable_confirmations = false
