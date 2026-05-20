@@ -4,7 +4,7 @@ Instructions for any LLM agent working in this repository.
 
 ## Purpose
 
-This repo is a harness for one-shot generating applications with different LLM models across different stacks, targeting [supabase/lite](https://github.com/supabase/lite). Each run is a tuple of `{model, stack, prompt}` that produces a working project plus structured logs.
+This repo is a harness for one-shot generating applications with different LLM models across different stacks, targeting [@supabase/lite](https://github.com/supabase-community/lite). Each run is a tuple of `{model, stack, prompt}` that produces a working project plus structured logs.
 
 Goal: over many runs, compare models and stacks by reading back the logs.
 
@@ -15,7 +15,7 @@ Each run is a **cold start**. Pretend no prior runs exist.
 - **Do not read, list, grep, or otherwise inspect any sibling `<slug>/` directory** in this repo. Other runs are evaluation artifacts, not reference material — peeking at them contaminates the comparison.
 - Do not copy code, configs, logs, `package.json`, lockfiles, READMEs, or friction/wins entries from previous runs.
 - Do not use prior `friction.md` to pre-empt known issues. Rediscover them — that's the measurement.
-- Your only external help is the **remote [supabase/lite](https://github.com/supabase/lite) repository** (fetched via `gh`) plus official docs for the chosen stack. No local cross-run shortcuts.
+- Your only external help is the **remote [@supabase/lite](https://github.com/supabase-community/lite) repository** (fetched via `gh`, unless the prompt says "use public" — see below) plus official docs for the chosen stack. No local cross-run shortcuts.
 - Files you may read in this repo: `AGENTS.md`, `CLAUDE.md`, and files inside your own `<slug>/` once created. Nothing else.
 
 ## Layout
@@ -95,7 +95,9 @@ Every external fetch (docs, MCP query, web search) is logged here with URL and r
 Every assumption is logged the moment it's made, not after.
 
 ### `friction.md`
-Anything unclear, missing, broken, or requiring a workaround. Write before asking the user.
+Anything unclear, missing, broken, or requiring a workaround **in `@supabase/lite` itself** — its API, docs, install, runtime behavior, or integration story. Write before asking the user.
+
+**Scope: `@supabase/lite` only.** Frictions with third-party libraries, the chosen stack (Vite, Bun, Tailwind, React, etc.), the OS (occupied ports, permissions), or generic tooling do **not** belong here. Log those in `progress.md` instead. If unsure, ask: "would fixing this require a change in the `supabase-community/lite` repo?" If no → `progress.md`.
 
 **Be thorough, not terse.** These entries feed downstream Linear tickets — include everything a maintainer would need to reproduce and fix without re-running the session. Do not rely on the LLM's conversation context to fill gaps; the ticket author won't have it.
 
@@ -112,27 +114,22 @@ Include where relevant:
 Bullets are fine for short items; use code blocks and sub-headings freely for longer ones. Length is not a problem — missing detail is.
 
 ```
-### 2026-04-22T14:40Z — tailwind v4 vite plugin name unclear [minor]
-- expected: `@tailwindcss/vite` per docs
-- actual: docs show both `@tailwindcss/vite` and postcss path, unclear which is canonical
-- hypothesis: docs in transition
-- suggested improvement: pick one in global prefs, note here
-- versions: tailwindcss@4.0.3, vite@5.4.10, bun@1.1.38
-- doc link: https://tailwindcss.com/docs/installation/using-vite#configure-the-vite-plugin
+### 2026-04-22T14:40Z — @supabase/lite createClient hangs on first query [major]
+- expected: `from("todos").select()` resolves like `@supabase/supabase-js`
+- actual: promise never resolves; no error thrown
+- hypothesis: missing init step not documented in README
+- versions: @supabase/lite@0.4.2, bun@1.1.38
+- doc link: https://github.com/supabase-community/lite/blob/<sha>/README.md#quick-start
 
-config tried:
+repro:
 ​```ts
-// vite.config.ts
-import tailwindcss from "@tailwindcss/vite";
-export default defineConfig({ plugins: [tailwindcss()] });
-​```
-
-error from `bun dev`:
-​```
-[vite] Internal server error: Cannot find module '@tailwindcss/vite'
-  at ... (full stack)
+import { createClient } from "@supabase/lite";
+const supabase = createClient();
+await supabase.from("todos").select(); // hangs
 ​```
 ```
+
+(Counter-example — NOT a friction: "port 5173 already in use when starting vite". That's an OS/tooling issue unrelated to `@supabase/lite` → log in `progress.md`.)
 
 Severity tags: `[blocker]`, `[major]`, `[minor]`. Resolution tag: `[resolved]` on a correction entry closes the linked issue at next publish (see **Filing frictions as issues**).
 
@@ -248,14 +245,31 @@ Log significant README assumptions in `progress.md` only if they affect behavior
 
 Unless the prompt says otherwise: ESM, TypeScript, Vite, Bun, Tailwind v4 (using the Vite plugin, per https://tailwindcss.com/docs/installation/using-vite). Note deviations in `progress.md`.
 
-## supabase/lite (REQUIRED)
+## @supabase/lite (REQUIRED)
 
-**Every generated project MUST use [supabase/lite](https://github.com/supabase/lite).** This is the entire purpose of this repository — runs that do not integrate supabase/lite are invalid.
+**Every generated project MUST use [@supabase/lite](https://github.com/supabase-community/lite)** (npm package name: `@supabase/lite`; repo: `supabase-community/lite`). This is the entire purpose of this repository — runs that do not integrate `@supabase/lite` are invalid.
 
-- The `supabase/lite` repo is **private**. Use the `gh` CLI to fetch details (README, source, issues) before integrating — e.g. `gh repo view supabase/lite`, `gh api repos/supabase/lite/contents/README.md`, `gh search code --repo supabase/lite <query>`. Do not guess its API.
-- Wire supabase/lite into the app as the data/runtime layer. Do not substitute another backend or skip it.
-- If a prompt appears to conflict with this requirement, log the conflict in `friction.md` and still integrate supabase/lite — do not silently drop it.
+- The `supabase-community/lite` repo is **private**. Default path: use the `gh` CLI to fetch details (README, source, issues) before integrating — e.g. `gh repo view supabase-community/lite`, `gh api repos/supabase-community/lite/contents/README.md`, `gh search code --repo supabase-community/lite <query>`. Do not guess its API.
+- Wire `@supabase/lite` into the app as the data/runtime layer. Do not substitute another backend or skip it.
+- If a prompt appears to conflict with this requirement, log the conflict in `friction.md` and still integrate `@supabase/lite` — do not silently drop it.
 - Runtime constraints are discovered per run. When one surfaces, log it in `friction.md` so constraints accumulate across runs.
+
+### Pinned package versions
+
+If the prompt names a specific `@supabase/lite` version (e.g. an npm tag, semver pin, or a `pkg.pr.new` URL like `https://pkg.pr.new/@supabase/lite@203`), the run MUST use **exactly that version**. Do not silently fall back to `latest` or another version.
+
+- Install it as given. With Bun, `pkg.pr.new` URLs work via `bun add <url>` in most cases; if Bun rejects the URL or the install fails, retry with `npm install <url>` (and use `npm` for the rest of the run, noting the switch in `progress.md`).
+- If the pinned version cannot be installed via either Bun or npm, **abort the run**. Do not substitute another version. Log the failure in `friction.md` (this counts as a `@supabase/lite` friction) and stop.
+
+### "use public" mode
+
+If the prompt contains **"use public"**, the agent must NOT use `gh` to inspect `supabase-community/lite` (or any related private repo). Rely only on publicly available information:
+
+- The npm package page / tarball (`npm view @supabase/lite`, README shipped in the package).
+- Type definitions, source, and docs available inside `node_modules/@supabase/lite/` after install.
+- Official public documentation sites linked from the npm page.
+
+Do not run `gh repo view`, `gh api repos/supabase-community/lite/...`, `gh search code --repo supabase-community/lite ...`, or equivalent. If information is missing under this constraint, log the gap as friction and proceed with best-effort from public sources.
 
 ## .gitignore
 
