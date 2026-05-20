@@ -1,0 +1,11 @@
+project_id = "contact-book"
+
+[api]
+port = 54321
+
+[auth]
+enabled = true
+jwt_secret = "dev-secret-change-me"
+
+[auth.email]
+enable_confirmations = false
