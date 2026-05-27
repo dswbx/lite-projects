@@ -4,7 +4,7 @@ Instructions for any LLM agent working in this repository.
 
 ## Purpose
 
-This repo is a harness for one-shot generating applications with different LLM models across different stacks, targeting [@supabase/lite](https://github.com/supabase-community/lite). Each run is a tuple of `{model, stack, prompt}` that produces a working project plus structured logs.
+This repo is a harness for one-shot generating applications with different LLM models across different stacks, targeting the `@supabase/lite` npm package. Each run is a tuple of `{model, stack, prompt}` that produces a working project plus structured logs.
 
 Goal: over many runs, compare models and stacks by reading back the logs.
 
@@ -15,7 +15,8 @@ Each run is a **cold start**. Pretend no prior runs exist.
 - **Do not read, list, grep, or otherwise inspect any sibling `<slug>/` directory** in this repo. Other runs are evaluation artifacts, not reference material — peeking at them contaminates the comparison.
 - Do not copy code, configs, logs, `package.json`, lockfiles, READMEs, or friction/wins entries from previous runs.
 - Do not use prior `friction.md` to pre-empt known issues. Rediscover them — that's the measurement.
-- Your only external help is the **remote [@supabase/lite](https://github.com/supabase-community/lite) repository** (fetched via `gh`, unless the prompt says "use public" — see below) plus official docs for the chosen stack. No local cross-run shortcuts.
+- Your only external help is **publicly available information about `@supabase/lite`** (the npm registry page, the package contents after install — README, STATUS, type defs, source under `node_modules/@supabase/lite/`, and any official docs URL linked from npm) plus official docs for the chosen stack. No local cross-run shortcuts.
+- **Do not use the `gh` CLI** (or any other means) to fetch a source repository for `@supabase/lite`. Treat it as a closed-source npm package. If information you need isn't available from public sources, log the gap in `proposals.md` and proceed with best-effort from what is public.
 - Files you may read in this repo: `AGENTS.md`, `CLAUDE.md`, and files inside your own `<slug>/` once created. Nothing else.
 
 ## Layout
@@ -66,7 +67,7 @@ Co-authored-by: <display name> <email>
 
 ## Logging protocol
 
-Every run MUST create `<slug>/.logs/` with four files. Append-only — never delete, correct via new entry referencing the prior one.
+Every run MUST create `<slug>/.logs/` with five files. Append-only — never delete, correct via new entry referencing the prior one.
 
 ### `prompt.md`
 Exact user prompt, verbatim. Written once at the start.
@@ -180,6 +181,50 @@ const { data } = await supabase.from("todos").select();
 - counterfactual: if the client shape differed, I'd have burned time diffing APIs and probably mis-generated types
 ```
 
+### `proposals.md`
+Forward-looking suggestions to make future runs less painful, grounded in what you actually hit during **this** run. Log-only (like `wins.md`) — not filed as issues automatically; the human curates these into the package, docs, or a skill.
+
+**Why this file exists.** `@supabase/lite` is treated as a closed-source npm package. Agents only see what ships on npm: the package's `README.md`, `STATUS.md`, type defs, and source in `node_modules/@supabase/lite/`, plus any official docs URL linked from the npm page. The package is therefore the single source of truth an LLM can read first-try. Reality (what an LLM actually trips over) should shape what lives there — not the maintainer's assumptions. Anything you needed and couldn't find publicly belongs in this file as a "publish-this" proposal.
+
+**Two goals, in priority order:**
+
+1. **Make the public package self-sufficient.** Propose concrete edits/additions to files that ship in the npm tarball (README, STATUS, a new LIMITATIONS.md, RECIPES.md, etc.) so the next cold-start LLM gets a true crash course: what works, what doesn't, what differs from hosted Supabase. The reuse-Supabase-knowledge angle is the headline win; the limitations angle is what prevents wasted tokens.
+2. **Seed a dedicated `supalite` agent skill.** Collect items a future agent skill (consumable by any agent runtime, not just one vendor's) could encode: trigger phrases, must-fetch resources, anti-patterns to short-circuit, snippets that worked, gotchas to warn about up front. The skill doesn't exist yet — these entries are the raw material the human will hand to a skill-writing tool later.
+
+   **Skills go stale; package contents don't (they ride the version pin).** A skill written today will be wrong by the next `@supabase/lite` release if it tries to encode API specifics. So skill seeds should lean toward **general principles** ("prefer the `@supabase/supabase-js` client shape; lite is drop-in compatible for X surface area") and **pointers to where current info lives** (`node_modules/@supabase/lite/README.md`, `STATUS.md`, type defs, official docs URL). The skill's job is to route the agent to fresh sources fast, not to be the source.
+
+**Ground every entry in this run.** Do not invent best-practices, speculate about features you didn't use, or restate the hosted Supabase docs. If you didn't hit it in this session, don't propose it. The whole point is to replace assumption-driven docs with reality-driven docs.
+
+**Substance over brevity.** Don't compress to the point of losing the *why*. The human curates these into docs/skill text later and needs enough context to act without replaying your session: what you observed, what surprised you, what you'd tell the next agent. Include snippets, links, and counterfactuals where they sharpen the point. Aim shorter than `friction.md` (no need for full repros) but longer than `wins.md` bullets when the proposal carries weight.
+
+Structure with two H2 sections inside the file:
+
+```
+## README / package docs
+
+### 2026-04-22T15:50Z — add LIMITATIONS.md to package
+- observed: spent N minutes discovering <X> isn't supported (link to friction entry)
+- propose: ship `LIMITATIONS.md` in the npm tarball with a short list: <X>, <Y>, <Z>
+- why it helps LLMs: a cold-start agent reading `node_modules/@supabase/lite/` first would skip the dead end
+- source for this proposal: friction.md L<n>-L<m>
+
+## Skill seeds (future `supalite` skill)
+
+### 2026-04-22T15:55Z — trigger phrase: "use supabase locally"
+- observed: prompt said "use supabase locally", I had to guess between supabase CLI and @supabase/lite
+- propose: skill should trigger on phrases like "supabase locally", "local supabase", "lite", "browser-only supabase"
+- why it helps LLMs: disambiguates @supabase/lite vs the supabase CLI on first read
+
+### 2026-04-22T16:02Z — must-fetch resource: package README + STATUS.md
+- observed: README answered <X>, STATUS.md answered <Y>; both shipped in the tarball
+- propose: skill should instruct agents to `cat node_modules/@supabase/lite/{README,STATUS}.md` immediately after install, before writing any code
+- counterfactual: skimming hosted Supabase docs first wasted ~N fetches
+```
+
+**Public-only reminder.** All proposed skill content must point to public resources: npm tarball files, the npm registry page, official docs sites linked from npm. Do not propose linking to a source repository for `@supabase/lite` — agents won't be allowed to follow it. If you needed something that isn't public, the proposal is "ship this in the package" (README/STATUS/new file), not "tell the skill where the private source lives".
+
+**Docs vs skill — when in doubt, propose docs.** Skills go stale; package docs ride the version pin. Skill-only items are things that can't live in a README: trigger logic, multi-step procedures, decision trees, "when the user says X do Y", and meta-guidance like "always read `STATUS.md` from the installed package before assuming a feature exists". Specific API shapes, version numbers, and feature lists belong in the package, with the skill pointing at them.
+
 ## Rules
 
 - Never delete log entries. Correct by appending a new entry that references the prior timestamp.
@@ -188,6 +233,8 @@ const { data } = await supabase.from("todos").select();
 - If blocked, write to `friction.md` before asking the user.
 - Entries are terse by default: H3 heading + 1-5 bullets. Real newlines, not `\n`.
 - Exception: `friction.md` entries should be as detailed as needed (code blocks, stack traces, versions, configs) so downstream tickets don't require session context to reproduce.
+- `proposals.md` is reality-driven: every entry must point to something you actually observed in this run (a friction line, a win, a fetched doc). No speculative "wouldn't it be nice if" entries.
+- `proposals.md` favors general principles + pointers to fresh sources (package files, official docs) over encoding specifics that will go stale.
 
 ## Handoff & commit
 
@@ -199,7 +246,7 @@ const { data } = await supabase.from("todos").select();
 
 ## Filing frictions as issues
 
-After human approval and as part of publish, each `friction.md` entry is filed as a GitHub issue in [`dswbx/lite-projects`](https://github.com/dswbx/lite-projects). `wins.md` stays log-only.
+After human approval and as part of publish, each `friction.md` entry is filed as a GitHub issue in [`dswbx/lite-projects`](https://github.com/dswbx/lite-projects). `wins.md` and `proposals.md` stay log-only — the human curates proposals into package docs or a future `supalite` skill out-of-band.
 
 ### First publish
 
@@ -247,9 +294,10 @@ Unless the prompt says otherwise: ESM, TypeScript, Vite, Bun, Tailwind v4 (using
 
 ## @supabase/lite (REQUIRED)
 
-**Every generated project MUST use [@supabase/lite](https://github.com/supabase-community/lite)** (npm package name: `@supabase/lite`; repo: `supabase-community/lite`). This is the entire purpose of this repository — runs that do not integrate `@supabase/lite` are invalid.
+**Every generated project MUST use the `@supabase/lite` npm package.** This is the entire purpose of this repository — runs that do not integrate `@supabase/lite` are invalid.
 
-- The `supabase-community/lite` repo is **private**. Default path: use the `gh` CLI to fetch details (README, source, issues) before integrating — e.g. `gh repo view supabase-community/lite`, `gh api repos/supabase-community/lite/contents/README.md`, `gh search code --repo supabase-community/lite <query>`. Do not guess its API.
+- Treat `@supabase/lite` as a **closed-source package**. Allowed sources of truth: the npm registry page (`npm view @supabase/lite`), the package contents after install (`node_modules/@supabase/lite/` — README, STATUS, type defs, source), and any official docs URL linked from the npm page. Do not guess its API; read the installed package.
+- **Do not use `gh`** (or web search for a source repo) to look up `@supabase/lite` internals. If something you need isn't public, log it in `proposals.md` (so it can be moved into the package later) and proceed with best-effort from public sources.
 - Wire `@supabase/lite` into the app as the data/runtime layer. Do not substitute another backend or skip it.
 - If a prompt appears to conflict with this requirement, log the conflict in `friction.md` and still integrate `@supabase/lite` — do not silently drop it.
 - Runtime constraints are discovered per run. When one surfaces, log it in `friction.md` so constraints accumulate across runs.
@@ -260,16 +308,6 @@ If the prompt names a specific `@supabase/lite` version (e.g. an npm tag, semver
 
 - Install it as given. With Bun, `pkg.pr.new` URLs work via `bun add <url>` in most cases; if Bun rejects the URL or the install fails, retry with `npm install <url>` (and use `npm` for the rest of the run, noting the switch in `progress.md`).
 - If the pinned version cannot be installed via either Bun or npm, **abort the run**. Do not substitute another version. Log the failure in `friction.md` (this counts as a `@supabase/lite` friction) and stop.
-
-### "use public" mode
-
-If the prompt contains **"use public"**, the agent must NOT use `gh` to inspect `supabase-community/lite` (or any related private repo). Rely only on publicly available information:
-
-- The npm package page / tarball (`npm view @supabase/lite`, README shipped in the package).
-- Type definitions, source, and docs available inside `node_modules/@supabase/lite/` after install.
-- Official public documentation sites linked from the npm page.
-
-Do not run `gh repo view`, `gh api repos/supabase-community/lite/...`, `gh search code --repo supabase-community/lite ...`, or equivalent. If information is missing under this constraint, log the gap as friction and proceed with best-effort from public sources.
 
 ## .gitignore
 
