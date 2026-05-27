@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --color-iron: #0f1114;
+  --color-slate: #1a1f26;
+  --color-steel: #2a323d;
+  --color-chalk: #e8e4dc;
+  --color-muted: #8a9199;
+  --color-ember: #e85d2c;
+  --color-ember-dim: #b84722;
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply min-h-dvh bg-iron text-chalk font-body;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgb(232 93 44 / 0.12), transparent),
+      linear-gradient(180deg, var(--color-iron) 0%, #0a0c0e 100%);
+  }
+
+  #root {
+    @apply min-h-dvh;
+  }
+}
