@@ -195,6 +195,8 @@ Forward-looking suggestions to make future runs less painful, grounded in what y
 
 **Ground every entry in this run.** Do not invent best-practices, speculate about features you didn't use, or restate the hosted Supabase docs. If you didn't hit it in this session, don't propose it. The whole point is to replace assumption-driven docs with reality-driven docs.
 
+**Bugs are not proposals.** Only propose docs/skill text for **limitations** — intentional gaps, design constraints, or fundamental properties of running locally that won't change (e.g. "no server-side cron", "auth runs in-browser"). If what you hit is a **bug** (crash, `TypeError`, wrong result, undocumented broken path, anything that should obviously be fixed in the package), it belongs in `friction.md` only. Do not encode a workaround as guidance — that freezes the workaround into agent behavior and outlives the eventual fix. When in doubt: would a maintainer call this "by design" or "a bug"? If the latter, friction-only.
+
 **Substance over brevity.** Don't compress to the point of losing the *why*. The human curates these into docs/skill text later and needs enough context to act without replaying your session: what you observed, what surprised you, what you'd tell the next agent. Include snippets, links, and counterfactuals where they sharpen the point. Aim shorter than `friction.md` (no need for full repros) but longer than `wins.md` bullets when the proposal carries weight.
 
 Structure with two H2 sections inside the file:
