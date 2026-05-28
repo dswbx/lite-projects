@@ -314,3 +314,27 @@ If the prompt names a specific `@supabase/lite` version (e.g. an npm tag, semver
 ## .gitignore
 
 `.claude/settings.local.json`, `node_modules`, `dist`, `build`, `.env*` — already gitignored at repo root.
+
+## Cloud / CI agent notes
+
+This repo has no root-level `package.json`. Each generated project (slug directory) is fully self-contained with its own `package.json` and `bun.lock`.
+
+### Running a generated project
+
+```
+cd <slug>/
+bun install
+bun run dev          # starts Vite dev server on http://localhost:5173
+```
+
+Other standard scripts per project: `bun run lint` (ESLint), `bun run build` (TypeScript + Vite production build), `bun run preview` (serve production build).
+
+### Codebase gotchas
+
+- `@supabase/lite` uses a Vite plugin that auto-initializes a local SQLite database on dev server start. The database file lives at `<slug>/supabase/.temp/data.db`. Schema migrations are applied automatically from `supabase/config.toml` and `supabase/migrations/`.
+- Existing lint errors in generated projects are expected (they were produced by different LLM models). Do not fix them unless that is the task.
+- If port 5173 is occupied, Vite will auto-increment (`5174`, `5175`, etc.). Kill the prior process or pass `--port <n>` to `vite`.
+
+### Platform-specific instructions
+
+- **Cursor Cloud**: [`.cursor/cloud-instructions.md`](.cursor/cloud-instructions.md)
