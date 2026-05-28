@@ -1,0 +1,1 @@
+# friction (@supabase/lite only)
