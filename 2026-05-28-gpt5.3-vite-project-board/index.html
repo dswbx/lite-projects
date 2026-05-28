@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Project Board</title><link rel='stylesheet' href='style.css'></head>
+<body>
+  <header><h1>Project Board</h1><div id='userBar'></div></header>
+  <section id='login'>
+    <h2>Sign in</h2>
+    <input id='username' placeholder='Enter username'/><button id='loginBtn'>Continue</button>
+  </section>
+  <main id='app' class='hidden'>
+    <section>
+      <h2>Your Projects</h2>
+      <form id='projectForm'><input id='projectName' placeholder='New project name' required><button>Add Project</button></form>
+      <select id='projectSelect'></select>
+    </section>
+    <section>
+      <h2>Tasks</h2>
+      <form id='taskForm'><input id='taskTitle' placeholder='Task title' required><button>Add Task</button></form>
+      <div class='board'>
+        <div class='col'><h3>To Do</h3><div class='lane' data-status='todo'></div></div>
+        <div class='col'><h3>In Progress</h3><div class='lane' data-status='inprogress'></div></div>
+        <div class='col'><h3>Done</h3><div class='lane' data-status='done'></div></div>
+      </div>
+    </section>
+  </main>
+<script type='module' src='main.js'></script>
+</body></html>
