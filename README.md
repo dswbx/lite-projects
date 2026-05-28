@@ -13,6 +13,7 @@ See [`AGENTS.md`](./AGENTS.md) for the protocol agents follow.
 - Cursor Composer 2 (`composer2`)
 - Cursor Composer 2.5 (`composer25`)
 - Gemini 3.1 Pro (`gemini31pro`)
+- Grok 4.3 (`grok43`)
 
 ## Cloud sandboxes
 
