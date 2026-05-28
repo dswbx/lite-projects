@@ -1,6 +1,6 @@
 # Simple Project Board
 
-This is a personal project board you can run on your own computer. You can create projects, add tasks, and drag tasks between **to-do**, **in progress**, and **done**.
+This is a personal project board you can run on your own computer. You can create projects, add tasks, and move tasks between **to-do**, **in progress**, and **done**.
 
 Each browser user sees only their own projects. Your data is stored locally by the app runtime on your machine.
 
@@ -21,9 +21,9 @@ Each browser user sees only their own projects. Your data is stored locally by t
 ## How to use it
 
 1. In **Projects**, type a project name and click **Create project**.
-2. Choose your project in the dropdown.
+2. Choose your project from the project list.
 3. In **Tasks**, type a task title and click **Add task**.
-4. Drag a task card into a different column to change its status:
+4. Change a task's status either by clicking the buttons on the task card or by dragging the card into a different column:
    - to-do
    - in progress
    - done

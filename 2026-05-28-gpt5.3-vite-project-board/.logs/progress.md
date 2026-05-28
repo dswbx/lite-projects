@@ -46,3 +46,29 @@
 - correction: use plain text filename to avoid shell interpolation artifacts
 - corrected file path: src/assets/hero.png
 - corrected statement: removed src/assets/hero.png to keep commit text-only for PR tooling
+
+### 2026-05-28T13:07:00Z — inspect branch repair target
+- inspected changed files only inside `2026-05-28-gpt5.3-vite-project-board`
+- fetched: local package docs at `node_modules/@supabase/lite/{LIMITATIONS.md,README.md}` (why: re-check Vite plugin setup and schema loading rules before changing lite integration)
+- assumed: this is a same-run repair pass for the existing branch, not a new cold-start run
+- outcome: identified likely mismatch between `supabase/config.toml` schema path and the committed `supabase/schemas/001_init.sql`
+
+### 2026-05-28T13:08:00Z — reproduce broken board behavior
+- ran `npm run build`: passed
+- ran `npm run lint`: failed on React hooks `set-state-in-effect` warnings promoted to errors
+- ran `bun run dev --host 127.0.0.1` and exercised the browser UI
+- outcome: creating a project silently failed; dev server logged `Could not find the table 'projects' in the schema cache`
+
+### 2026-05-28T13:11:00Z — fix schema loading and board UI
+- updated `supabase/config.toml` to load `./schemas/001_init.sql`
+- rewrote `src/App.tsx` to surface load/mutation errors, avoid the lint-blocked effect pattern, cache the Supabase client across HMR, and add click-based task status controls alongside drag-and-drop
+- replaced scaffold CSS with a responsive project board layout: project rail, board header, task composer, and three stable columns
+- updated `README.md` to mention both status buttons and drag-and-drop
+- outcome: app functionality and styling repaired
+
+### 2026-05-28T13:20:00Z — verification
+- ran `npm run lint`: pass
+- ran `npm run build`: pass
+- restarted `bun run dev --host 127.0.0.1`; lite wrote a migration and reported new `projects` and `tasks` tables in the schema diff
+- browser smoke test: reloaded app, loaded persisted project/task, moved task via status button, and checked desktop plus 390px mobile text layout
+- outcome: board works locally with the corrected lite schema path

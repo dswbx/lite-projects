@@ -1,11 +1,25 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import './App.css'
 
-type Project = { id: string; name: string; owner_id: string }
-type Task = { id: string; project_id: string; title: string; status: 'todo' | 'in_progress' | 'done' }
+type Status = 'todo' | 'in_progress' | 'done'
+type Project = { id: string; name: string; owner_id: string; created_at?: string }
+type Task = { id: string; project_id: string; title: string; status: Status; created_at?: string }
 
-const supabase = createClient(window.location.origin, 'local-dev-key')
-const statuses: Task['status'][] = ['todo', 'in_progress', 'done']
+const createProjectBoardClient = () => createClient(window.location.origin, 'local-dev-key')
+type ProjectBoardClient = ReturnType<typeof createProjectBoardClient>
+
+declare global {
+  var projectBoardSupabase: ProjectBoardClient | undefined
+}
+
+const supabase = globalThis.projectBoardSupabase ?? createProjectBoardClient()
+globalThis.projectBoardSupabase = supabase
+const statuses: Array<{ id: Status; label: string; shortLabel: string; hint: string }> = [
+  { id: 'todo', label: 'To do', shortLabel: 'Todo', hint: 'Queued work' },
+  { id: 'in_progress', label: 'In progress', shortLabel: 'Doing', hint: 'Active now' },
+  { id: 'done', label: 'Done', shortLabel: 'Done', hint: 'Finished' },
+]
 
 const getUserId = () => {
   const key = 'board_user_id'
@@ -24,70 +38,280 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const [projectName, setProjectName] = useState('')
   const [taskTitle, setTaskTitle] = useState('')
+  const [projectsReady, setProjectsReady] = useState(false)
+  const [loadedTaskProjectId, setLoadedTaskProjectId] = useState<string | null>(null)
+  const [message, setMessage] = useState('')
 
-  const load = async () => {
-    const { data: p } = await supabase.from('projects').select('*').eq('owner_id', userId).order('created_at')
-    setProjects((p as Project[]) ?? [])
-    if (!selectedProjectId && p?.[0]?.id) setSelectedProjectId(p[0].id)
-  }
+  const selectedProject = projects.find((project) => project.id === selectedProjectId)
+  const selectedProjectTasks = tasks.filter((task) => task.project_id === selectedProjectId)
+  const tasksReady = loadedTaskProjectId === selectedProjectId
+  const totalTasks = selectedProjectTasks.length
 
-  const loadTasks = async (projectId: string) => {
-    if (!projectId) return setTasks([])
-    const { data } = await supabase.from('tasks').select('*').eq('project_id', projectId).order('created_at')
-    setTasks((data as Task[]) ?? [])
-  }
+  const fetchProjects = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('owner_id', userId)
+      .order('created_at', { ascending: true })
 
-  useEffect(() => { load() }, [])
-  useEffect(() => { loadTasks(selectedProjectId) }, [selectedProjectId])
+    if (error) throw error
+    return (data as Project[]) ?? []
+  }, [userId])
+
+  const fetchTasks = useCallback(async (projectId: string) => {
+    if (!projectId) return []
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return (data as Task[]) ?? []
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchProjects()
+      .then((projectList) => {
+        if (cancelled) return
+        setProjects(projectList)
+        setSelectedProjectId((current) => {
+          if (current && projectList.some((project) => project.id === current)) return current
+          return projectList[0]?.id ?? ''
+        })
+        setMessage('')
+      })
+      .catch((error: Error) => {
+        if (cancelled) return
+        setMessage(`Project data could not load: ${error.message}`)
+      })
+      .finally(() => {
+        if (!cancelled) setProjectsReady(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [fetchProjects])
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchTasks(selectedProjectId)
+      .then((taskList) => {
+        if (cancelled) return
+        setTasks(taskList)
+        setLoadedTaskProjectId(selectedProjectId)
+        setMessage('')
+      })
+      .catch((error: Error) => {
+        if (cancelled) return
+        setLoadedTaskProjectId(selectedProjectId)
+        setMessage(`Tasks could not load: ${error.message}`)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [fetchTasks, selectedProjectId])
 
   const addProject = async () => {
-    if (!projectName.trim()) return
-    await supabase.from('projects').insert({ name: projectName.trim(), owner_id: userId })
+    const name = projectName.trim()
+    if (!name) return
+
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({ name, owner_id: userId })
+      .select('*')
+      .single()
+
+    if (error) {
+      setMessage(`Project could not be created: ${error.message}`)
+      return
+    }
+
+    const project = data as Project
+    setProjects((current) => [...current, project])
+    setSelectedProjectId(project.id)
     setProjectName('')
-    await load()
+    setMessage('')
   }
 
   const addTask = async () => {
-    if (!taskTitle.trim() || !selectedProjectId) return
-    await supabase.from('tasks').insert({ title: taskTitle.trim(), project_id: selectedProjectId, status: 'todo' })
+    const title = taskTitle.trim()
+    if (!title || !selectedProjectId) return
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert({ title, project_id: selectedProjectId, status: 'todo' })
+      .select('*')
+      .single()
+
+    if (error) {
+      setMessage(`Task could not be added: ${error.message}`)
+      return
+    }
+
+    setTasks((current) => [...current, data as Task])
+    setLoadedTaskProjectId(selectedProjectId)
     setTaskTitle('')
-    await loadTasks(selectedProjectId)
+    setMessage('')
   }
 
-  const onDrop = async (taskId: string, status: Task['status']) => {
-    await supabase.from('tasks').update({ status }).eq('id', taskId)
-    await loadTasks(selectedProjectId)
+  const onDrop = async (taskId: string, status: Status) => {
+    if (!taskId) return
+
+    const previousTasks = tasks
+    setTasks((current) => current.map((task) => (task.id === taskId ? { ...task, status } : task)))
+
+    const { error } = await supabase.from('tasks').update({ status }).eq('id', taskId)
+
+    if (error) {
+      setTasks(previousTasks)
+      setMessage(`Task could not be moved: ${error.message}`)
+      return
+    }
+
+    setMessage('')
   }
 
   return (
-    <main style={{ fontFamily: 'Inter, system-ui, sans-serif', padding: 20 }}>
-      <h1>My Project Board</h1>
-      <p>User workspace id: <code>{userId}</code></p>
-      <section>
-        <h2>Projects</h2>
-        <input value={projectName} onChange={(e) => setProjectName(e.target.value)} placeholder='New project name' />
-        <button onClick={addProject}>Create project</button>
-        <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)}>
-          <option value=''>Select a project</option>
-          {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-      </section>
-      <section>
-        <h2>Tasks</h2>
-        <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} placeholder='Task title' />
-        <button onClick={addTask} disabled={!selectedProjectId}>Add task</button>
-      </section>
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginTop: 20 }}>
-        {statuses.map((status) => (
-          <div key={status} onDragOver={(e) => e.preventDefault()} onDrop={(e) => onDrop(e.dataTransfer.getData('text/task-id'), status)} style={{ border: '1px solid #ccc', minHeight: 160, borderRadius: 8, padding: 8 }}>
-            <h3>{status.replace('_', ' ')}</h3>
-            {tasks.filter((t) => t.status === status).map((t) => (
-              <article key={t.id} draggable onDragStart={(e) => e.dataTransfer.setData('text/task-id', t.id)} style={{ background: '#f4f4f4', marginBottom: 8, padding: 8, borderRadius: 6, cursor: 'grab' }}>
-                {t.title}
-              </article>
-            ))}
+    <main className="app-shell">
+      <aside className="project-rail" aria-label="Projects">
+        <div className="brand-block">
+          <span className="brand-mark" aria-hidden="true">PB</span>
+          <div>
+            <p className="eyebrow">Local workspace</p>
+            <h1>Project Board</h1>
           </div>
-        ))}
+        </div>
+
+        <form
+          className="stacked-form"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void addProject()
+          }}
+        >
+          <label htmlFor="project-name">New project</label>
+          <div className="input-row">
+            <input
+              id="project-name"
+              value={projectName}
+              onChange={(event) => setProjectName(event.target.value)}
+              placeholder="Campaign plan"
+            />
+            <button type="submit">Create</button>
+          </div>
+        </form>
+
+        <div className="project-list" role="list" aria-label="Saved projects">
+          {!projectsReady && <p className="muted">Loading projects...</p>}
+          {projectsReady && projects.length === 0 && (
+            <p className="empty-copy">Create a project to start your first board.</p>
+          )}
+          {projects.map((project) => (
+            <button
+              className={project.id === selectedProjectId ? 'project-button active' : 'project-button'}
+              key={project.id}
+              onClick={() => setSelectedProjectId(project.id)}
+              type="button"
+            >
+              <span>{project.name}</span>
+              <small>{project.id === selectedProjectId ? `${totalTasks} tasks` : 'Open'}</small>
+            </button>
+          ))}
+        </div>
+
+        <p className="workspace-id">Workspace <code>{userId.slice(0, 8)}</code></p>
+      </aside>
+
+      <section className="board-pane" aria-label="Task board">
+        <header className="board-header">
+          <div>
+            <p className="eyebrow">Current project</p>
+            <h2>{selectedProject?.name ?? 'No project selected'}</h2>
+          </div>
+          <div className="board-stats" aria-label="Project task totals">
+            <span>{projects.length} projects</span>
+            <span>{totalTasks} tasks</span>
+          </div>
+        </header>
+
+        <form
+          className="task-composer"
+          onSubmit={(event) => {
+            event.preventDefault()
+            void addTask()
+          }}
+        >
+          <label htmlFor="task-title">Add task</label>
+          <input
+            id="task-title"
+            value={taskTitle}
+            onChange={(event) => setTaskTitle(event.target.value)}
+            placeholder={selectedProjectId ? 'Write the next task' : 'Create or choose a project first'}
+            disabled={!selectedProjectId}
+          />
+          <button type="submit" disabled={!selectedProjectId}>Add</button>
+        </form>
+
+        {message && <p className="status-message" role="status">{message}</p>}
+
+        <div className="kanban-grid">
+          {statuses.map((status) => {
+            const columnTasks = selectedProjectTasks.filter((task) => task.status === status.id)
+
+            return (
+              <section
+                className="kanban-column"
+                key={status.id}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => void onDrop(event.dataTransfer.getData('text/task-id'), status.id)}
+              >
+                <header>
+                  <div>
+                    <h3>{status.label}</h3>
+                    <p>{status.hint}</p>
+                  </div>
+                  <span>{columnTasks.length}</span>
+                </header>
+
+                <div className="task-stack">
+                  {!tasksReady && <p className="muted">Loading...</p>}
+                  {tasksReady && columnTasks.length === 0 && (
+                    <p className="drop-copy">Drop tasks here</p>
+                  )}
+                  {columnTasks.map((task) => (
+                    <article
+                      className="task-card"
+                      draggable
+                      key={task.id}
+                      onDragStart={(event) => event.dataTransfer.setData('text/task-id', task.id)}
+                    >
+                      <span>{task.title}</span>
+                      <div className="status-switch" aria-label={`Move ${task.title}`}>
+                        {statuses.map((option) => (
+                          <button
+                            disabled={option.id === task.status}
+                            key={option.id}
+                            onClick={() => void onDrop(task.id, option.id)}
+                            type="button"
+                          >
+                            {option.shortLabel}
+                          </button>
+                        ))}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )
+          })}
+        </div>
       </section>
     </main>
   )

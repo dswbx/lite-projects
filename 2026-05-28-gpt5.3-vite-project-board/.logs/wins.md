@@ -11,3 +11,8 @@ const supabase = createClient(window.location.origin, 'local-dev-key')
 ### 2026-05-28T00:06:00Z — Vite plugin path is straightforward for local runtime
 - `@supabase/lite/vite` plugin integration was a one-line addition in `vite.config.ts` and immediately enabled same-origin API calls from browser app code.
 - counterfactual: without this, wiring a local API server and CORS-aware client bootstrap would add setup overhead for a small app.
+
+### 2026-05-28T13:20:00Z — schema diff made the config repair obvious
+- after fixing `supabase/config.toml` to point at `./schemas/001_init.sql`, the Vite plugin restart printed a concrete schema diff showing `+ projects`, `+ tasks`, and the `tasks.project_id -> projects.id` foreign key.
+- why it mattered: this confirmed the runtime had finally seen the app schema before I touched the browser again.
+- lite-specific win: the same-process Vite plugin gave database migration feedback in the app dev server, so the broken UI could be tied back to schema loading quickly.
