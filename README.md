@@ -19,3 +19,4 @@ See [`AGENTS.md`](./AGENTS.md) for the protocol agents follow.
 
 - Cursor Cloud
 - Claude Code Cloud
+- Codex Cloud
