@@ -1,0 +1,374 @@
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  min-height: 100svh;
+  background:
+    linear-gradient(90deg, rgba(24, 48, 61, 0.055) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(24, 48, 61, 0.055) 1px, transparent 1px),
+    var(--bg);
+  background-size: 42px 42px;
+}
+
+.project-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-height: 100svh;
+  padding: 28px;
+  border-right: 1px solid var(--line-strong);
+  background: rgba(237, 243, 242, 0.9);
+  backdrop-filter: blur(16px);
+}
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ink);
+  background: linear-gradient(135deg, var(--ink), var(--accent));
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.stacked-form,
+.task-composer {
+  display: grid;
+  gap: 9px;
+}
+
+.stacked-form label,
+.task-composer label {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.input-row,
+.task-composer {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.stacked-form .input-row {
+  display: grid;
+  gap: 8px;
+}
+
+input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  min-height: 42px;
+  padding: 0 12px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(11, 123, 104, 0.16);
+}
+
+input:disabled {
+  background: var(--surface-muted);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+button:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.project-list {
+  display: grid;
+  gap: 8px;
+}
+
+.project-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  min-height: 52px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.project-button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-button small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.project-button.active {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.workspace-id {
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.board-pane {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding: 28px;
+}
+
+.board-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.board-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.board-stats span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 10px;
+}
+
+.task-composer {
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  align-items: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 12px;
+}
+
+.status-message {
+  border: 1px solid rgba(167, 68, 45, 0.24);
+  border-radius: 8px;
+  background: #fff0e7;
+  color: #8d321a;
+  font-weight: 700;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.kanban-column {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 420px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  overflow: hidden;
+}
+
+.kanban-column > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.kanban-column h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.kanban-column p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 3px 0 0;
+}
+
+.kanban-column header span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.task-stack {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 340px;
+  padding: 12px;
+}
+
+.task-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: grab;
+  padding: 12px;
+  box-shadow: 0 8px 22px rgba(29, 53, 45, 0.08);
+}
+
+.task-card:active {
+  cursor: grabbing;
+}
+
+.task-card span {
+  overflow-wrap: anywhere;
+}
+
+.status-switch {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-muted);
+  padding: 4px;
+}
+
+.status-switch button {
+  min-height: 30px;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 0 6px;
+}
+
+.status-switch button:not(:disabled):hover {
+  background: #dfe9e7;
+  color: var(--ink);
+}
+
+.status-switch button:disabled {
+  background: var(--ink);
+  color: #fff;
+  opacity: 1;
+}
+
+.empty-copy,
+.drop-copy,
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.empty-copy,
+.drop-copy {
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .project-rail {
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .kanban-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kanban-column {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 620px) {
+  .project-rail,
+  .board-pane {
+    padding: 18px;
+  }
+
+  .board-header,
+  .task-composer {
+    display: grid;
+  }
+
+  .task-composer {
+    grid-template-columns: 1fr;
+  }
+
+  .board-stats {
+    justify-content: start;
+  }
+}

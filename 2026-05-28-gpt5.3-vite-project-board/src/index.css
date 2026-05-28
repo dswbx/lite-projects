@@ -1,0 +1,66 @@
+:root {
+  --bg: #f5f8f8;
+  --surface: #ffffff;
+  --surface-muted: #edf3f2;
+  --ink: #18303d;
+  --muted: #61727a;
+  --line: #d8e1e3;
+  --line-strong: #bac8cc;
+  --accent: #0b7b68;
+  --accent-strong: #075e50;
+  --code-bg: #e5eeee;
+
+  --sans: Avenir Next, Avenir, ui-sans-serif, system-ui, sans-serif;
+  --heading: Georgia, Cambria, Times New Roman, serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 16px/1.45 var(--sans);
+  letter-spacing: 0;
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  color: var(--ink);
+  letter-spacing: 0;
+  line-height: 1;
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: clamp(30px, 3.4vw, 44px);
+}
+
+p {
+  margin: 0;
+}
+
+code {
+  font-family: var(--mono);
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--ink);
+  font-size: 12px;
+  padding: 3px 5px;
+}
