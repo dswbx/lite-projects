@@ -1,0 +1,21 @@
+[api]
+port = 54321
+schemas = ["public"]
+max_rows = 1000
+
+[db]
+driver = "sqlite-postgres"
+url = "file:./supabase/.temp/data.db"
+
+[db.migrations]
+schema_paths = ["./schemas/schema.sql"]
+
+[auth]
+enabled = true
+jwt_secret = "dev-password-vault-secret-change-me"
+jwt_expiry = 3600
+enable_signup = true
+minimum_password_length = 8
+
+[auth.email]
+enable_confirmations = false
