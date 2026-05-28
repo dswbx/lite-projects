@@ -1,0 +1,1 @@
+-- This is a seed file for the database
