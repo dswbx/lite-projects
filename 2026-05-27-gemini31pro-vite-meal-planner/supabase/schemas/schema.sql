@@ -13,7 +13,7 @@ create policy "Users can manage their own meals" on meals
 -- Meal ingredients table
 create table meal_ingredients (
   id uuid primary key default gen_random_uuid(),
-  meal_id uuid references meals(id) on delete cascade not null,
+  meal_id uuid references meals on delete cascade not null,
   name text not null,
   amount text
 );
@@ -33,7 +33,8 @@ create table weekly_plan (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null,
   day_of_week text not null,
-  meal_id uuid references meals(id) on delete set null
+  meal_id uuid references meals on delete set null,
+  unique(user_id, day_of_week)
 );
 
 alter table weekly_plan enable row level security;
