@@ -1,5 +1,9 @@
 See @AGENTS.md for agent instructions.
 
+## Screening tracker
+
+[`SCREENED.md`](SCREENED.md) tracks which runs have already been screened for friction/proposal harvesting. Before screening, check it to skip done runs; after screening a run, append it to the table.
+
 ## Linear follow-ups
 
 When asked to file follow-up tickets from a run's `friction.md` / `wins.md`, create them as sub-issues of **[LITE-146 "Frictions LLMs"](https://linear.app/supabase/issue/LITE-146/frictions-llms)** (team: Supalite, project: Supalite MVP).

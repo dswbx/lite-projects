@@ -47,3 +47,10 @@ Migration error: Error: no such column: "user_id"
 - **workaround:** Deleted `supabase/.temp/data.db` and restarted `bun dev` for a clean schema apply.
 - **versions:** `@supabase/lite@0.3.1-next.1`
 - **note:** Dev-only pain; not a runtime bug once schema matches. Documented in `progress.md`.
+
+### 2026-05-29T14:39Z — forceSchema migration on existing DB failed mid-diff [minor] [resolved]
+
+- **canary:** `@supabase/lite@0.3.1-next.3` (up from `0.3.1-next.1`)
+- **repro:** Existing `data.db` with `workout_exercises` / `exercise_sets` without `user_id`; updated `supabase/schemas/schema.sql` to add `user_id` + indexes; `supalite({ forceSchema: true })` on `bun dev`.
+- **result:** Schema diff showed `+ workout_exercises.user_id`, `+ exercise_sets.user_id`, indexes applied; no `Migration error` or `no such column: "user_id"`. `PRAGMA table_info(workout_exercises)` lists `user_id` column.
+- **conclusion:** Fixed in `0.3.1-next.3` for this column-add + index case.
