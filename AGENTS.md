@@ -308,7 +308,9 @@ Unless the prompt says otherwise: ESM, TypeScript, Vite, Bun, Tailwind v4 (using
 
 If the prompt names a specific `@supabase/lite` version (e.g. an npm tag, semver pin, or a `pkg.pr.new` URL like `https://pkg.pr.new/@supabase/lite@203`), the run MUST use **exactly that version**. Do not silently fall back to `latest` or another version.
 
-- Install it as given. With Bun, `pkg.pr.new` URLs work via `bun add <url>` in most cases; if Bun rejects the URL or the install fails, retry with `npm install <url>` (and use `npm` for the rest of the run, noting the switch in `progress.md`).
+- **If the pin is a `pkg.pr.new` URL, install it with `npm install <url>` and use `npm` for the rest of the run.** Bun cannot install `pkg.pr.new` `@supabase/lite` URLs — `bun add <url>` fails with a `DependencyLoop` error (Bun resolves the URL back to a published registry version and sees a self-reference). Do not waste a `bun add` attempt on a `pkg.pr.new` pin; go straight to npm. A `package-lock.json` becomes the lockfile and replaces `bun.lock` (delete the stale `bun.lock` so `npm ci` / frozen installs are consistent), and the project's README + any Playwright `webServer` command should use `npm` instead of `bun`.
+- For non-`pkg.pr.new` pins (an npm dist-tag or semver), `bun add <spec>` is fine; if Bun rejects it, fall back to `npm install <spec>`.
+- Note any Bun→npm switch in `progress.md`.
 - If the pinned version cannot be installed via either Bun or npm, **abort the run**. Do not substitute another version. Log the failure in `friction.md` (this counts as a `@supabase/lite` friction) and stop.
 
 ## .gitignore
