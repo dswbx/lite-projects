@@ -4,13 +4,13 @@ Plan parties, meetups, and get-togethers in one place. Give each event a name, d
 
 ## How to open it
 
-1. Install [Bun](https://bun.sh) if you do not have it yet.
+1. Install [Node.js](https://nodejs.org) if you do not have it yet (this gives you the `npm` command).
 2. Open a terminal in this folder.
 3. Run:
 
 ```bash
-bun install
-bun dev
+npm install
+npm run dev
 ```
 
 4. Open the link shown in the terminal (usually **http://localhost:5173**).
@@ -29,17 +29,17 @@ Everything is stored locally in your browser session’s database on this machin
 
 ## Troubleshooting
 
-- **“Port already in use”** — Another app is using port 5173. Stop that app or run `bun dev -- --port 5174` and open the new port in your browser.
+- **“Port already in use”** — Another app is using port 5173. Stop that app or run `npm run dev -- --port 5174` and open the new port in your browser.
 - **Cannot sign in** — Check email and password. For a new account, use **Create an account** first.
-- **Blank page after install** — Run `bun install` again, then `bun dev`.
+- **Blank page after install** — Run `npm install` again, then `npm run dev`.
 
 ## Optional: production build
 
 ```bash
-bun run build
-bun run preview
+npm run build
+npm run preview
 ```
 
-Note: the local Supabase API is meant for development with `bun dev`. Preview mode may not include the full backend.
+Note: the local Supabase API is meant for development with `npm run dev`. Preview mode may not include the full backend.
 
 Built with React, Vite, Tailwind, and `@supabase/lite`.
