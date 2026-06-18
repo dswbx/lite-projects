@@ -17,7 +17,7 @@ This is the maintainer-intended verification loop (see `node_modules/@supabase/l
 
 ## Workflow
 
-1. **Cold start.** `cat node_modules/@supabase/lite/{LIMITATIONS,README,UPGRADE}.md`. Confirm the CLI has the command: `bunx lite upgrade --help`. (Use the `supalite` skill for base API/limitations.)
+1. **Bump `@supabase/lite` to latest, then cold-start the docs.** These projects pin old canary/pre-release versions that usually predate or lag the `lite upgrade` command — **bump without asking**: `bun add @supabase/lite@latest` (or `npm install @supabase/lite@latest` for an npm-locked project). The baseline must end up green on the bumped version anyway, so an old pin only hides upgrade-path bugs. Then read the installed docs: `cat node_modules/@supabase/lite/{LIMITATIONS,README,UPGRADE}.md` and confirm the CLI: `bunx lite upgrade --help`. (Use the `supalite` skill for base API/limitations.) If the bump breaks the supalite baseline, fix minimally and log it as a `@supabase/lite` friction.
 
 2. **Make the client URL/key env-configurable** so one build targets either backend. See `references/playwright-setup.md`. The pattern:
    ```ts
@@ -42,6 +42,8 @@ This is the maintainer-intended verification loop (see `node_modules/@supabase/l
 9. **(Opt-in) hosted lane.** Only if asked: `SUPABASE_ACCESS_TOKEN=... lite upgrade --target hosted ...` (creates a real cloud project). Same re-run-and-compare step.
 
 10. **Log upgrade frictions.** Anything broken/unclear in `lite upgrade` itself goes in the project's `friction.md` (per the repo's logging protocol), not encoded as a permanent workaround here.
+
+11. **Record state in `UPGRADES.md`** (repo root). This is the at-a-glance index of which projects have been through this skill. Mark the project **done** and fill its row: number of e2e tests, what's tested (auth / CRUD / filters / RLS isolation / etc.), the `@supabase/lite` version it was upgraded with, baseline vs upgraded result (e.g. `7/7 ↔ 7/7`), and the date performed. If `UPGRADES.md` doesn't exist yet, create it with a row for **every** project directory (the `YYYY-MM-DD-<model>-<stack>-<name>/` slugs) marked **pending**, then flip the one you just finished to done.
 
 ## Anti-patterns
 
