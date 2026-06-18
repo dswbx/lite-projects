@@ -44,3 +44,11 @@
 - why it mattered: I didn't have to research config keys or copy a template; immediately moved on to writing the schema
 - versions: @supabase/lite 0.3.1-next.1
 - counterfactual: without `lite init` I'd have hunted through README for the minimal config shape, probably missed `enable_confirmations = false`, and gotten a confusing email-confirmation error on first signup
+
+### 2026-06-18T00:30Z — same e2e suite green on supalite AND upgraded full Supabase (no app changes)
+- one Playwright suite (auth, items CRUD, filters, RLS isolation) ran unchanged against both backends: 7/7 on supalite (Vite plugin) and 7/7 on the `lite upgrade --target local` Supabase stack
+- the only switch needed was env vars (`VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`) + skipping the supalite Vite plugin; zero changes to `src/` data-layer code or the schema/RLS
+- why it mattered: confirms the supalite → Supabase upgrade preserved user-visible behavior. RLS policies (`user_id = auth.uid()`), auth (signup/signin/signout with email confirmations off), and CRUD all behaved identically. The Postgres DDL + RLS written for supalite applied cleanly to real Postgres with no dialect edits.
+- parity win: the headline feature — develop locally on supalite, upgrade to Supabase, same code, same tests, same results
+- versions: @supabase/lite@0.5.0, @supabase/supabase-js@2.106.2, supabase CLI 2.98.1, @playwright/test@1.61.0
+- counterfactual: without the dual-backend env-config + one shared suite, you couldn't prove the upgrade was non-breaking — you'd be eyeballing the app on each backend

@@ -5,15 +5,17 @@
     "": {
       "name": "app",
       "dependencies": {
-        "@supabase/lite": "0.3.1-next.1",
+        "@supabase/lite": "0.5.0",
         "@supabase/supabase-js": "^2.106.2",
         "@tailwindcss/vite": "^4.3.0",
+        "postgres": "^3.4.9",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
         "tailwindcss": "^4.3.0",
       },
       "devDependencies": {
         "@eslint/js": "^10.0.1",
+        "@playwright/test": "^1.61.0",
         "@types/node": "^24.12.3",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
@@ -137,6 +139,8 @@
 
     "@pgsql/types": ["@pgsql/types@17.6.2", "", {}, "sha512-1UtbELdbqNdyOShhrVfSz3a1gDi0s9XXiQemx+6QqtsrXe62a6zOGU+vjb2GRfG5jeEokI1zBBcfD42enRv0Rw=="],
 
+    "@playwright/test": ["@playwright/test@1.61.0", "", { "dependencies": { "playwright": "1.61.0" }, "bin": { "playwright": "cli.js" } }, "sha512-cKA5B6lpFEMyMGjxF54QihfYpB4FkEGH+qZhtArDEG+wezQAJY8Pq6C7T1SjWz+FFzt3TbyoXBQYk/0292TdJA=="],
+
     "@protobufjs/aspromise": ["@protobufjs/aspromise@1.1.2", "", {}, "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="],
 
     "@protobufjs/base64": ["@protobufjs/base64@1.1.2", "", {}, "sha512-AZkcAA5vnN/v4PDqKyMR5lx7hZttPDgClv83E//FMNhR2TMcLUhfRUBHCmSl0oi9zMgDDqRUJkSxO3wm85+XLg=="],
@@ -203,7 +207,7 @@
 
     "@supabase/functions-js": ["@supabase/functions-js@2.106.2", "", { "dependencies": { "tslib": "2.8.1" } }, "sha512-oRnr0QrL8H+zTO1YyQ1QjiHZU/957jvubbxSJTUm2XLAgzoGGV9Tahfyd+uvLsBLRVmXLtpU3oyCjdQIvkGMOA=="],
 
-    "@supabase/lite": ["@supabase/lite@0.3.1-next.1", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@electric-sql/pglite": "0.4.5", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.10", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "chokidar": "^5.0.0", "commander": "^14.0.3", "dotenv": "^17.3.1", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-deparser": "17.18.3", "pgsql-parser": "17.9.15", "uuid": "^13.0.0" }, "peerDependencies": { "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["postgres", "vite"], "bin": { "lite": "dist/cli/index.js" } }, "sha512-UU29vvLy++l1dD7bFJt5KN3mGf8Mqt4la+NmF0U/5ALOxgUfGWNqUhUwwCD38yo4D9dJGFRVIcJ7ASgcVJ1Lyw=="],
+    "@supabase/lite": ["@supabase/lite@0.5.0", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@electric-sql/pglite": "0.4.5", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.10", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "chokidar": "^5.0.0", "commander": "^14.0.3", "dotenv": "^17.3.1", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "pgsql-deparser": "17.18.3", "pgsql-parser": "17.9.15", "uuid": "^13.0.0" }, "peerDependencies": { "@supabase/supabase-js": ">=2.90.0", "postgres": "^3.4.8", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["postgres", "vite"], "bin": { "lite": "dist/cli/index.js" } }, "sha512-HWDEExQriDX9+k5jEJgh6yK1gDB5bQ1U92pUFMiuXQRlV3J9LRBpH33MlrvO0SqLilE5V4vqeJIuTEy2mERMgw=="],
 
     "@supabase/pg-delta": ["@supabase/pg-delta@1.0.0-alpha.10", "", { "dependencies": { "@stricli/core": "^1.2.4", "@supabase/pg-topo": "^1.0.0-alpha.1", "@ts-safeql/sql-tag": "^0.2.0", "chalk": "^5.6.2", "debug": "^4.3.7", "pg": "^8.17.2", "zod": "^4.2.1" }, "bin": { "pgdelta": "dist/cli/bin/cli.js" } }, "sha512-2rE0APqgEavQxKpm9TATYvXADO+v4CP+dGGFSFFxnlz2D9b+Qme5+TZLstKDdVxqeIMYK19wqfSB4iSKrLiVjg=="],
 
@@ -517,11 +521,17 @@
 
     "picomatch": ["picomatch@4.0.4", "", {}, "sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A=="],
 
+    "playwright": ["playwright@1.61.0", "", { "dependencies": { "playwright-core": "1.61.0" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-Z+7BeeqQPRRzklHsVFP4KTGIyMxKUmfeRA4WisM6G3/XW6nwGeX6fX9qYaDa+CiUqpOkb2f6X3nar05R3kSuJQ=="],
+
+    "playwright-core": ["playwright-core@1.61.0", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-caX7TrY3Ml6egyDX0WUcTHDxodl/b51y5wJOdCEA36QviK/s2g081hvmGs8eaE3DWb6NYZQ6BjO/QkNRPenoPA=="],
+
     "plpgsql-deparser": ["plpgsql-deparser@0.7.7", "", { "dependencies": { "@pgsql/types": "^17.6.2", "pgsql-deparser": "17.18.3" } }, "sha512-C5RPz2zQ9P/+XyRNgvP/9egOWOdP4r7UKR1PaC1p4QoewiOEJTjZbtlYzfd0ed1AatnOx3nU+IghhrAwan0yUA=="],
 
     "plpgsql-parser": ["plpgsql-parser@0.5.9", "", { "dependencies": { "@libpg-query/parser": "^17.6.3", "@pgsql/traverse": "17.2.6", "@pgsql/types": "^17.6.2", "pgsql-deparser": "17.18.3", "plpgsql-deparser": "0.7.7" } }, "sha512-Y8O+7sAbH6SkqR5OyPwE5p8ea9qbKJT7a6kyEbEid38oWolvGMrLVAusYfTGNohm+P3IdO98kiHkf0j5gMZCDg=="],
 
     "postcss": ["postcss@8.5.15", "", { "dependencies": { "nanoid": "^3.3.12", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-FfR8sjd4em2T6fb3I2MwAJU7HWVMr9zba+enmQeeWFfCbm+UOC/0X4DS8XtpUTMwWMGbjKYP7xjfNekzyGmB3A=="],
+
+    "postgres": ["postgres@3.4.9", "", {}, "sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw=="],
 
     "postgres-array": ["postgres-array@2.0.0", "", {}, "sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA=="],
 
@@ -620,6 +630,8 @@
     "pg-proto-parser/@babel/traverse": ["@babel/traverse@7.28.5", "", { "dependencies": { "@babel/code-frame": "^7.27.1", "@babel/generator": "^7.28.5", "@babel/helper-globals": "^7.28.0", "@babel/parser": "^7.28.5", "@babel/template": "^7.27.2", "@babel/types": "^7.28.5", "debug": "^4.3.1" } }, "sha512-TCCj4t55U90khlYkVV/0TfkJkAkUg3jZFA3Neb7unZT8CPok7iiRfaX0F+WnqWqt7OxhOn0uBKXCw4lbL8W0aQ=="],
 
     "pg-proto-parser/@babel/types": ["@babel/types@7.28.5", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA=="],
+
+    "playwright/fsevents": ["fsevents@2.3.2", "", { "os": "darwin" }, "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="],
 
     "pg-proto-parser/@babel/traverse/@babel/types": ["@babel/types@7.29.7", "", { "dependencies": { "@babel/helper-string-parser": "^7.29.7", "@babel/helper-validator-identifier": "^7.29.7" } }, "sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA=="],
   }

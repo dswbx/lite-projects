@@ -39,3 +39,19 @@
 ### 2026-05-28T08:00Z — done
 - README written for non-technical users; index.html title set; scaffold leftovers removed
 - no @supabase/lite frictions to log this run; everything documented worked first try
+
+### 2026-06-18T00:00Z — meta: add e2e + upgrade-verification suite (skill validation)
+- not part of the original run; this project was chosen as the next validation target for the `supalite-upgrade-test` skill (after `2026-05-29-composer25-vite-event-planner`)
+- bumped `@supabase/lite` 0.3.1-next.1 → 0.5.0 (latest stable, ships `lite upgrade`; installs cleanly with bun) — human-approved version choice; `0.3.1-next.1` predates the upgrade command
+- added Playwright e2e (`e2e/`, `playwright.config.ts`, `test:e2e` script) covering auth (signup/signin/signout), items CRUD (insert/select/update/delete), client-side category+location filters, and RLS cross-user isolation; coverage map in `e2e/COVERAGE.md`
+- made `vite.config.ts` skip the embedded supalite plugin when `VITE_SUPABASE_URL` is set; `src/supabase.ts` was already env-configurable (`VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` with `window.location.origin` fallback), so it was left unchanged
+- baseline e2e vs supalite (Vite plugin, no env vars): 7/7 green
+- outcome: ok
+
+### 2026-06-18T00:30Z — local upgrade + re-run SAME suite
+- `bunx lite upgrade --dry-run`: readiness + in-memory pglite rehearsal passed
+- `bunx lite upgrade --target local --force --no-migrate-sessions`: first attempt failed on the missing `postgres` npm driver after it had already rewritten `config.toml` and started the Docker stack (see friction.md) — installed `postgres`, stopped the stack, removed `supabase/.branches`/`.temp`, reran → upgrade complete; local Supabase at `http://127.0.0.1:49713`
+- re-ran the SAME suite with `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` pointing at the upgraded stack: 7/7 green
+- green-green (supalite 7/7, upgraded Supabase 7/7) — upgrade preserved behavior
+- teardown: `supabase stop --no-backup`, removed `.branches`/`.temp`/`supabase-credentials.json`/`config.toml.bak`, `git checkout supabase/config.toml`; re-confirmed supalite baseline 7/7 green
+- outcome: ok
