@@ -25,3 +25,12 @@
 - propose: skill should instruct agents, when a prompt names a channel/tag ("next", "canary", "beta") rather than a semver, to run `npm view @supabase/lite dist-tags` first, log the resolved version, and pin that exact version.
 - why it helps LLMs: makes the run reproducible (the tag moves; the pinned version doesn't) and satisfies the harness's "use exactly the pinned version" rule without ambiguity.
 - source: progress.md L (cold start / dist-tag resolution).
+
+### 2026-07-22T15:20Z — safer DB iteration story: don't wipe to apply schema; make reset non-footgun
+- observed (this run): I repeatedly reached for `rm -rf supabase/.temp` to get a clean state while iterating, and once did it during commit cleanup and destroyed the user's notes. Two things made `rm` feel like the default:
+  1. It wasn't obvious that schema changes are already **additive** — I verified by experiment that the declarative diff does ALTER/CREATE (existing rows survive a restart), so a wipe is almost never needed just to apply new schema. That fact isn't front-and-center where an agent iterating would see it.
+  2. After any reset, live browser sessions become ghosts and the very next insert fails with an opaque `500 {"code":"SUP","message":"Error: FOREIGN KEY constraint failed"}` (see friction.md) — so a reset silently breaks a running app in a way that's hard to diagnose.
+- propose (docs): a short "Iterating locally" note in README/STATUS stating (a) schema edits are additive and do not require deleting `supabase/.temp` / the data file; (b) to intentionally reset, use `lite db reset` (replays migrations + seed) rather than `rm`; (c) resetting invalidates existing auth sessions, so clients should validate with `getUser()` and re-auth.
+- propose (skill seed, general + non-staling): supalite skill should tell agents "prefer non-destructive iteration; do NOT `rm -rf supabase/.temp` to apply schema changes (they're additive); if you must reset, it wipes data — only on throwaway data. After a reset, expect stale sessions." This is a workflow/decision rule (skill-appropriate), not an API specific.
+- why it helps LLMs: directly prevents the exact data-loss + wedged-app sequence this session hit; routes agents to the additive-diff guarantee and `lite db reset` instead of a destructive `rm`.
+- source: friction.md (FK 500 error shape) + progress.md 2026-07-22T15:15Z (self-inflicted wipe + fix).
