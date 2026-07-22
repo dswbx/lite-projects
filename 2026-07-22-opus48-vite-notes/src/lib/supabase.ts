@@ -16,3 +16,11 @@ export type Note = {
   created_at: string
   updated_at: string
 }
+
+export type NoteShare = {
+  id: string
+  note_id: string
+  owner_id: string
+  shared_with_email: string
+  created_at: string
+}

@@ -49,3 +49,31 @@
 - parity: `contains` / `text[]` behaved like hosted Supabase for arrays of scalars, matching the LIMITATIONS.md note that scalar-array `contains` is supported. Prior Supabase knowledge transferred directly.
 - counterfactual: if `text[]` hadn't translated, I'd have fallen back to a join table and then fought the two unsupported SQLite paths above — significantly more code and more friction.
 - versions: @supabase/lite@0.7.1-next.5, @supabase/supabase-js@2.110.8, driver sqlite-postgres
+
+### 2026-07-22T14:56Z — declarative schema diff is non-destructive for additive changes
+- added a whole new table + policies to `supabase/schemas/schema.sql`, restarted the Vite plugin against an EXISTING db file (data present), and the boot diff was purely additive:
+  ```
+  + note_shares
+  + note_shares_recipient_idx on note_shares
+  + note_shares.note_id → notes.id
+  ```
+  The pre-existing `notes` row survived intact (content + `tags` array). No DROP, no data loss.
+- why it mattered: the user had been burned by "notes vanished after a schema change". This confirms the declarative-schema apply does ALTER/CREATE for additions rather than drop-and-recreate, so shipping a schema change to a user with existing local data is safe.
+- counterfactual: if the diff engine recreated tables, every schema iteration would wipe local data and the app would be unusable for real use. The additive behavior is what makes iterating on schema during development viable.
+- how to reproduce the check: insert a row, change schemas/*.sql (add table/column), restart WITHOUT deleting `supabase/.temp/data.db`, confirm the row is still there.
+- versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres
+
+### 2026-07-22T14:56Z — subquery in RLS `USING` works (enables cross-table authorization)
+- a `USING` policy with an `EXISTS (subquery over another table)` executes correctly on the SQLite path (merged into WHERE as real SQL). This is what made "recipient can read a note that appears in note_shares" expressible declaratively:
+  ```sql
+  create policy "read notes shared with me" on notes for select using (
+    exists (select 1 from note_shares
+      where note_shares.note_id = notes.id
+        and note_shares.owner_id = notes.user_id
+        and note_shares.shared_with_email = (auth.jwt() ->> 'email'))
+  );
+  ```
+- `auth.jwt() ->> 'email'` resolves in policy expressions (JWT carries a lowercased `email` claim), so email-based sharing needs no `auth.users` lookup from the client (which isn't exposed anyway).
+- why it mattered: cross-table authorization (the crux of any sharing/collaboration feature) is doable purely in RLS. The one caveat is that the subquery must NOT be table-aliased (see friction.md) — using the full table name works.
+- parity: matches how you'd write this against hosted Supabase/Postgres, minus the alias caveat.
+- versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres

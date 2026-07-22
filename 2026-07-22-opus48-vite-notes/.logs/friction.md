@@ -37,3 +37,39 @@
 - not tested: I did not run `vite preview` to determine which doc is correct for this version — flagging the contradiction itself, which is verifiable from the two shipped files alone.
 - versions: @supabase/lite@0.7.1-next.5
 - fix belongs in the package: reconcile the two files in the same release (whichever behavior is true for 0.7.x). → filing as friction (a shipped-doc defect), not a proposal.
+
+### 2026-07-22T14:56Z — RLS policy with an aliased subquery emits broken SQL (drops table alias) [major]
+- context: implementing note-sharing. A `notes` SELECT policy needs to check a row exists in `note_shares` for the current user. I wrote the subquery with a table alias (`from note_shares s ... s.note_id`).
+- expected: the EXISTS subquery in a `USING` clause is merged into the query `WHERE` and executes as SQL (per STATUS.md: "USING conditions are merged into the query's WHERE clause"). Aliased subqueries are standard SQL.
+- actual: every query against `notes` failed to prepare. The generated SQL keeps the `s.` column qualifier but omits the alias in `FROM` (`from "note_shares"` instead of `from "note_shares" "s"`), so `"s"."note_id"` references a non-existent alias.
+- offending policy (Postgres DDL in `supabase/schemas/schema.sql`):
+  ```sql
+  create policy "read notes shared with me" on notes
+    for select using (
+      exists (
+        select 1 from note_shares s
+        where s.note_id = notes.id
+          and s.owner_id = notes.user_id
+          and s.shared_with_email = (auth.jwt() ->> 'email')
+      )
+    );
+  ```
+- error returned by the REST API for any `select` on `notes` (verbatim):
+  ```json
+  {"code":"SUP","details":null,"hint":null,
+   "message":"Error: Failed to prepare statement: select \"id\", \"title\", \"user_id\" from \"notes\" where (\"user_id\" = ? or exists (select 1 as \"_lit\" from \"note_shares\" where (\"s\".\"note_id\" = \"notes\".\"id\" and \"s\".\"owner_id\" = \"notes\".\"user_id\" and \"s\".\"shared_with_email\" = ?))) limit ?"}
+  ```
+  Note `from "note_shares"` with no alias, yet `"s"."note_id"` is referenced → SQLite `no such column: s.note_id`.
+- workaround (works): drop the alias, qualify with the full table name.
+  ```sql
+  exists (
+    select 1 from note_shares
+    where note_shares.note_id = notes.id
+      and note_shares.owner_id = notes.user_id
+      and note_shares.shared_with_email = (auth.jwt() ->> 'email')
+  )
+  ```
+  After this change the identical two-user test passed (recipient reads shared note; owner/others unaffected).
+- impact: silent footgun. Aliasing a table in a subquery is idiomatic SQL and an LLM will reach for it by default; the failure only appears at query time (not at schema-apply time), and it breaks *every* read of the table, not just shared rows. The error is a generic "Failed to prepare statement", so the alias-dropping cause is non-obvious.
+- versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres, @supabase/supabase-js@2.110.8, bun@1.3.13
+- scope check: this is a SQL-translation defect in the AST→SQLite deparser for policy subqueries → a fix would live in the supabase-community/lite repo. Friction, not a proposal.

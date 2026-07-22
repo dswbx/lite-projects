@@ -52,3 +52,16 @@
 - verified (browser, agent-browser): create → URL becomes new `/note/:id`; deep-link `/note/:id` opens the note; `?tag=work` filters to exactly the 2 work notes and highlights the chip; multi-tag notes render (Groceries #shopping #home, Q3 #work #urgent). Screenshots captured.
 - tooling note (NOT a lite friction): agent-browser's synthetic button clicks / Enter keypress did not reach React's handlers on this layout (elementFromPoint confirmed no overlay; programmatic `.click()` and real deep-links exercise the same handlers and work). Verified via `.click()` + URL-driven navigation instead. A human user's clicks land normally.
 - `tsc -b` clean, `bun run build` clean (445 kB js / 129 kB gzip).
+
+### 2026-07-22T14:56Z — feature: share a note by email (read-only)
+- schema (additive): new `note_shares(note_id, owner_id, shared_with_email, unique(note_id,email))` table + new `notes` SELECT policy for recipients + 2 policies on note_shares. No changes to existing columns.
+- verified NON-DESTRUCTIVE (user's explicit concern): created a DB under the pre-sharing schema with a real note, then swapped in the sharing schema and restarted WITHOUT deleting supabase/.temp. Boot diff was purely additive (`+ note_shares` / indexes / FKs, no DROP); the existing note survived with content + tags intact. The earlier "notes vanished" was my own `rm -rf supabase/.temp` during dev, not the migration mechanism — declarative diff does ALTER/CREATE, not drop-and-recreate.
+- security model (recipient stored by email; email comes from JWT `email` claim, auth normalises to lowercase):
+  - recipient SELECT on notes via `exists(select 1 from note_shares where note_shares.note_id=notes.id and note_shares.owner_id=notes.user_id and note_shares.shared_with_email = auth.jwt()->>'email')`.
+  - the `owner_id = notes.user_id` term is the seal: combined with `note_shares` insert `WITH CHECK (auth.uid()=owner_id)` (no subquery → allowed on SQLite), a user cannot fabricate a share for someone else's note. Avoids the unsupported subquery-in-INSERT-WITH-CHECK path entirely.
+  - recipient has no UPDATE/DELETE policy → cannot edit/delete (verified: both affect 0 rows).
+- verified via REST (owner + recipient + attacker): recipient reads shared note; recipient's own-notes query (user_id=eq.me) excludes it; recipient update/delete → 0 rows; attacker's fabricated share grants nothing; attacker spoofing owner_id → 403.
+- friction hit + resolved in-session: aliased subquery in the RLS policy emitted broken SQL (dropped the table alias). Rewrote without alias (full table name). See friction.md.
+- UI: split list into "My notes" (tag-filtered) and "Shared with me" (read-only badge). Owner editor gained a Share panel (add email / list / remove). Recipient sees a read-only view (no inputs, no delete, no share). Selection still URL-driven for both.
+- verified in browser: recipient signed in → "My notes" empty, roadmap under "Shared with me" READ-ONLY, unshared "Private diary" not visible, read-only note view; owner signed in → Share panel lists reader@example.com. Screenshots captured.
+- `tsc -b` clean, `bun run build` clean (450 kB js / 130 kB gzip).

@@ -25,12 +25,14 @@ To stop the app later, go back to the terminal and press `Ctrl + C`.
 4. **Add tags.** In the open note, click the **Add a tag** box (just under the title), type a tag, and press **Enter**. Add as many as you like. Click the **×** on a tag to remove it. Tags are just labels like `work` or `shopping`.
 5. **Filter by tag.** Tag buttons appear above the note list. Click one (for example `#work`) to show only notes with that tag; click **All** to show everything again.
 6. **Switch notes.** Click any note in the left-hand list to open it.
-7. **Delete a note.** Open it and click **Delete** (top right of the note), then confirm.
-8. **Sign out.** Click **Sign out** in the top-right corner. Sign back in anytime with the same email and password and your notes will be there.
+7. **Share a note.** Open one of your notes and scroll to **Share this note** at the bottom. Type the email address of another person who uses the app and click **Share**. They will see the note the next time they open the app. To stop sharing, click **Remove** next to their email.
+8. **Notes shared with you** appear in their own **Shared with me** section in the left column, marked **read-only**. You can open and read them, but you cannot change or delete them, and they never mix in with your own notes.
+9. **Delete a note.** Open one of your own notes and click **Delete** (top right), then confirm.
+10. **Sign out.** Click **Sign out** in the top-right corner. Sign back in anytime with the same email and password and your notes will be there.
 
 **The web address updates as you go.** When you open a note, the address in your browser changes to point at that note, and choosing a tag filter adds it to the address too. That means you can bookmark a note or a filtered view, use the browser's Back and Forward buttons, or copy the address to jump straight back to where you were.
 
-Your notes are private to your account. Someone signing in with a different account cannot see them.
+Your notes are private to your account. Someone signing in with a different account cannot see them, unless you explicitly share a note with them, and even then they can only read it.
 
 ### Where does my data go?
 
@@ -43,4 +45,4 @@ Everything is stored locally on your machine (a small database file inside this 
 
 ## For developers
 
-Optional: `bun run build` makes a production build. Stack: Vite + React + TypeScript + Tailwind CSS v4 + React Router, with [`@supabase/lite`](https://www.npmjs.com/package/@supabase/lite) providing the local database and authentication (a Supabase-compatible runtime running in-process via its Vite plugin). Tags are stored as a Postgres `text[]` column on each note; the selected note and tag filter live in the URL (`/note/:id?tag=...`).
+Optional: `bun run build` makes a production build. Stack: Vite + React + TypeScript + Tailwind CSS v4 + React Router, with [`@supabase/lite`](https://www.npmjs.com/package/@supabase/lite) providing the local database and authentication (a Supabase-compatible runtime running in-process via its Vite plugin). Tags are stored as a Postgres `text[]` column on each note; the selected note and tag filter live in the URL (`/note/:id?tag=...`). Sharing is a `note_shares` table (note + recipient email); read-only access for recipients and per-user isolation are both enforced by Postgres row-level security policies, not app code.
