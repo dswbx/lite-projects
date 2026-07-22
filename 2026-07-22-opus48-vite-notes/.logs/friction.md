@@ -91,3 +91,18 @@
 - versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres, @supabase/supabase-js@2.110.8
 - scope: SQLite error-translation/parity gap in the package (maps SQLite constraint errors to a generic SUP/500 instead of the Postgres SQLSTATE + 409 that PostgREST clients expect). Fix would live in supabase-community/lite. Friction, not a proposal.
 - note: `getUser()` correctly returns `403 user_not_found` for a ghost token — that behavior is good and is what the app fix relies on.
+
+### 2026-07-22T15:25Z — not discoverable that schema changes apply non-destructively; assumed a DB wipe was required [minor]
+- what happened: across this run I assumed that to apply a changed `supabase/schemas/schema.sql` (add a column, add a table) I had to clear the database first — so I kept running `rm -rf supabase/.temp` before restarting the dev server. That assumption is wrong (the declarative diff is additive), but nothing in the docs I read up front corrected it, so the destructive habit stuck and eventually wiped the user's real notes.
+- expected: a cold-start agent editing `schemas/*.sql` should be able to tell, from the docs it reads first (`LIMITATIONS.md` / `README.md`), that restarting applies changes **non-destructively** (existing rows survive) and that no wipe/reset is needed to pick up a schema edit.
+- actual: the README "Migrations" section says "apply pending migrations on boot, then run the declarative diff" but never states the diff is additive / preserves data. `LIMITATIONS.md` (the file the package tells agents to read first) says nothing about the apply-on-boot data-safety guarantee. With no explicit statement, "delete the db to get a clean apply" reads as the safe default — the opposite of the truth.
+- what I actually verified (by experiment, not docs): adding a table to `schemas/schema.sql` and restarting the Vite plugin against an existing `supabase/.temp/data.db` produced a purely additive boot diff and left existing rows intact:
+  ```
+  + note_shares
+  + note_shares_recipient_idx on note_shares
+  + note_shares.note_id → notes.id
+  # pre-existing notes row still present afterwards (content + tags intact)
+  ```
+- impact: the missing "it's additive, don't wipe" signal is what made `rm -rf supabase/.temp` feel routine, which directly caused the data loss and the follow-on stale-session breakage this session. High blast radius for a docs-clarity gap.
+- versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres
+- scope: docs/integration-story gap in the package (the runtime behavior is correct and good — it just isn't stated where a cold-start agent will see it). A one-line guarantee in `LIMITATIONS.md`/README ("restarting applies schema changes additively; you do not need to delete the data file") would close it. See proposals.md 2026-07-22T15:20Z for the forward-looking version.
