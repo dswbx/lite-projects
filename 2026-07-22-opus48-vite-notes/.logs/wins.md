@@ -33,3 +33,19 @@
 
 ### 2026-07-22T00:00Z — LIMITATIONS.md is a genuine cold-start accelerator
 - `cat node_modules/@supabase/lite/LIMITATIONS.md` gave everything needed to avoid the SQLite footguns (no `DEFAULT auth.uid()`, no `rpc`, pass `user_id` from client) in one read. I designed the schema right the first time.
+
+### 2026-07-22T14:05Z — `text[]` array column + `contains` filter worked on the SQLite path
+- added `tags text[] not null default '{}'` to a table and it round-tripped as a real JS array through supabase-js — no JSON.parse, no serialization dance:
+  ```ts
+  await supabase.from('notes').insert({ user_id, title, tags: ['work', 'urgent'] }).select().single()
+  // -> row.tags === ['work','urgent']
+  ```
+- server-side tag filtering worked with the standard supabase-js operator:
+  ```ts
+  await supabase.from('notes').select('*').contains('tags', ['work'])
+  // REST: notes?tags=cs.{work} -> only rows containing 'work'
+  ```
+- why it mattered: let me model "multiple tags per note + filter by tag" with a single column and zero extra tables/joins. Crucially this sidesteps the SQLite gotchas I'd otherwise hit with a `note_tags` join table (embedded dotted-path filters + subquery WITH CHECK are both unsupported). The array column kept RLS trivial too — tags are on the note row, so the existing `auth.uid() = user_id` policies already protect them.
+- parity: `contains` / `text[]` behaved like hosted Supabase for arrays of scalars, matching the LIMITATIONS.md note that scalar-array `contains` is supported. Prior Supabase knowledge transferred directly.
+- counterfactual: if `text[]` hadn't translated, I'd have fallen back to a join table and then fought the two unsupported SQLite paths above — significantly more code and more friction.
+- versions: @supabase/lite@0.7.1-next.5, @supabase/supabase-js@2.110.8, driver sqlite-postgres

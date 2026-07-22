@@ -15,5 +15,6 @@ export default function App() {
 
   if (!session) return <Auth />
 
+  // Notes stays mounted across navigation; it reads the selected id from the URL.
   return <Notes user={session.user} />
 }

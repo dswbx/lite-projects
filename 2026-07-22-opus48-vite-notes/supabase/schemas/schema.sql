@@ -1,10 +1,12 @@
 -- Notes: one row per note, owned by the user who created it.
 -- No DEFAULT auth.uid() on SQLite path — client supplies user_id, RLS enforces ownership.
+-- Tags live inline as a text[] array on the note (validated: `contains` filter works on the SQLite path).
 create table if not exists notes (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   title text not null default '',
   content text not null default '',
+  tags text[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

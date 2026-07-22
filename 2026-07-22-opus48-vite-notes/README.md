@@ -22,9 +22,13 @@ To stop the app later, go back to the terminal and press `Ctrl + C`.
 1. **Create an account.** On the first screen click **Sign up**, enter any email and a password (at least 6 characters), and click **Sign up**. You're signed in right away, no email confirmation needed.
 2. **Create a note.** Click **+ New note** on the left. A blank note opens on the right.
 3. **Write.** Type a title and your text. Changes save automatically a moment after you stop typing, so there's no save button.
-4. **Switch notes.** Click any note in the left-hand list to open it.
-5. **Delete a note.** Open it and click **Delete** (top right of the note), then confirm.
-6. **Sign out.** Click **Sign out** in the top-right corner. Sign back in anytime with the same email and password and your notes will be there.
+4. **Add tags.** In the open note, click the **Add a tag** box (just under the title), type a tag, and press **Enter**. Add as many as you like. Click the **×** on a tag to remove it. Tags are just labels like `work` or `shopping`.
+5. **Filter by tag.** Tag buttons appear above the note list. Click one (for example `#work`) to show only notes with that tag; click **All** to show everything again.
+6. **Switch notes.** Click any note in the left-hand list to open it.
+7. **Delete a note.** Open it and click **Delete** (top right of the note), then confirm.
+8. **Sign out.** Click **Sign out** in the top-right corner. Sign back in anytime with the same email and password and your notes will be there.
+
+**The web address updates as you go.** When you open a note, the address in your browser changes to point at that note, and choosing a tag filter adds it to the address too. That means you can bookmark a note or a filtered view, use the browser's Back and Forward buttons, or copy the address to jump straight back to where you were.
 
 Your notes are private to your account. Someone signing in with a different account cannot see them.
 
@@ -39,4 +43,4 @@ Everything is stored locally on your machine (a small database file inside this 
 
 ## For developers
 
-Optional: `bun run build` makes a production build. Stack: Vite + React + TypeScript + Tailwind CSS v4, with [`@supabase/lite`](https://www.npmjs.com/package/@supabase/lite) providing the local database and authentication (a Supabase-compatible runtime running in-process via its Vite plugin).
+Optional: `bun run build` makes a production build. Stack: Vite + React + TypeScript + Tailwind CSS v4 + React Router, with [`@supabase/lite`](https://www.npmjs.com/package/@supabase/lite) providing the local database and authentication (a Supabase-compatible runtime running in-process via its Vite plugin). Tags are stored as a Postgres `text[]` column on each note; the selected note and tag filter live in the URL (`/note/:id?tag=...`).

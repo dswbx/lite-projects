@@ -43,3 +43,12 @@
 - Opus 4.8 not in AGENTS.md attribution table. Table lists Claude Opus 4.7 as `Co-authored-by: claude-opus-4-7 <noreply@anthropic.com>`.
 - runtime identity: exact model id `claude-opus-4-8`. Derived trailer by the documented Anthropic pattern (model id + `<noreply@anthropic.com>`): `Co-authored-by: claude-opus-4-8 <noreply@anthropic.com>`.
 - human approved commit in-session.
+
+### 2026-07-22T14:05Z — feature: tags + URL routing
+- schema: added `tags text[] not null default '{}'` to `notes` (no new table; tags ride the note row so existing per-user RLS covers them).
+- pre-validated `text[]` on the SQLite path via REST before building: insert stores/returns a real array; `?tags=cs.{work}` (supabase-js `.contains('tags',[t])`) returns only matching rows. Works.
+- routing: added `react-router-dom@7`. `BrowserRouter` in main.tsx. Selected note = `/note/:id` (read via `useMatch`, so `Notes` stays mounted — no refetch on navigation). Tag filter = `?tag=` search param. New-note/select/delete/header all navigate; tag filter preserved across selection.
+- tag editing UI in the note editor (type + Enter/comma to add, × to remove, Backspace-to-remove-last); tag chips on list items; filter bar (All + one chip per distinct tag) above the list. Autosave extended to tags.
+- verified (browser, agent-browser): create → URL becomes new `/note/:id`; deep-link `/note/:id` opens the note; `?tag=work` filters to exactly the 2 work notes and highlights the chip; multi-tag notes render (Groceries #shopping #home, Q3 #work #urgent). Screenshots captured.
+- tooling note (NOT a lite friction): agent-browser's synthetic button clicks / Enter keypress did not reach React's handlers on this layout (elementFromPoint confirmed no overlay; programmatic `.click()` and real deep-links exercise the same handlers and work). Verified via `.click()` + URL-driven navigation instead. A human user's clicks land normally.
+- `tsc -b` clean, `bun run build` clean (445 kB js / 129 kB gzip).
