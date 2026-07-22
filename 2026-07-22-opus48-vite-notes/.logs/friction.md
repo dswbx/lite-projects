@@ -73,3 +73,21 @@
 - impact: silent footgun. Aliasing a table in a subquery is idiomatic SQL and an LLM will reach for it by default; the failure only appears at query time (not at schema-apply time), and it breaks *every* read of the table, not just shared rows. The error is a generic "Failed to prepare statement", so the alias-dropping cause is non-obvious.
 - versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres, @supabase/supabase-js@2.110.8, bun@1.3.13
 - scope check: this is a SQL-translation defect in the AST→SQLite deparser for policy subqueries → a fix would live in the supabase-community/lite repo. Friction, not a proposal.
+
+### 2026-07-22T15:15Z — FK violation on insert returns generic 500 "SUP" instead of PostgREST's structured 23503/409 [minor]
+- context: inserting a `notes` row whose `user_id` is absent from `auth.users` (stale session after a DB reset).
+- expected (PostgREST/Supabase parity): a foreign-key violation returns HTTP 409 with `code: "23503"`, and `message`/`details` naming the constraint (e.g. `insert or update on table "notes" violates foreign key constraint "..."`). Client code can branch on `error.code === '23503'`.
+- actual (lite SQLite path): HTTP 500 with a generic body:
+  ```json
+  {"code":"SUP","details":null,"hint":null,"message":"Error: FOREIGN KEY constraint failed"}
+  ```
+  No SQLSTATE, no constraint name, no column. `details`/`hint` are null.
+- impact for LLMs/apps: can't reliably branch on the error programmatically (I had to string-match `/foreign key/i` on the message, which is fragile and locale/impl-dependent). A 500 also reads as "server bug" rather than "client sent a bad row", which misdirects debugging. Getting a real SQLSTATE (`23503`) would let apps distinguish FK vs unique (`23505`, which lite *does* surface — see the share-dup handling) consistently.
+- repro (valid-signed JWT for a non-existent user, any note insert):
+  ```
+  POST /rest/v1/notes  {"user_id":"<uuid-not-in-auth.users>","title":"x"}
+  -> 500 {"code":"SUP","message":"Error: FOREIGN KEY constraint failed"}
+  ```
+- versions: @supabase/lite@0.7.1-next.5, driver sqlite-postgres, @supabase/supabase-js@2.110.8
+- scope: SQLite error-translation/parity gap in the package (maps SQLite constraint errors to a generic SUP/500 instead of the Postgres SQLSTATE + 409 that PostgREST clients expect). Fix would live in supabase-community/lite. Friction, not a proposal.
+- note: `getUser()` correctly returns `403 user_not_found` for a ghost token — that behavior is good and is what the app fix relies on.

@@ -71,7 +71,16 @@ export function Notes({ user }: { user: User }) {
       .insert({ user_id: user.id, title: '', content: '', tags })
       .select()
       .single()
-    if (error) return setError(error.message)
+    if (error) {
+      // A foreign-key failure here means our session points at a user that no longer
+      // exists (e.g. the database was reset). Recover by signing out cleanly.
+      if (/foreign key/i.test(error.message)) {
+        setError('Your session is no longer valid. Signing you out — please sign in again.')
+        await supabase.auth.signOut()
+        return
+      }
+      return setError(error.message)
+    }
     const note = data as Note
     setMyNotes((prev) => [note, ...prev])
     openNote(note.id)

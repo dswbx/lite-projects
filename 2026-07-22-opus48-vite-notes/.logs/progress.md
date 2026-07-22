@@ -65,3 +65,12 @@
 - UI: split list into "My notes" (tag-filtered) and "Shared with me" (read-only badge). Owner editor gained a Share panel (add email / list / remove). Recipient sees a read-only view (no inputs, no delete, no share). Selection still URL-driven for both.
 - verified in browser: recipient signed in → "My notes" empty, roadmap under "Shared with me" READ-ONLY, unshared "Private diary" not visible, read-only note view; owner signed in → Share panel lists reader@example.com. Screenshots captured.
 - `tsc -b` clean, `bun run build` clean (450 kB js / 130 kB gzip).
+
+### 2026-07-22T15:15Z — fix: stale session after DB reset (self-inflicted data loss + robustness)
+- root cause of user report ("can't create notes, previous notes gone" + screenshot "Error: FOREIGN KEY constraint failed"): during the previous commit's cleanup I ran `rm -rf dist supabase/.temp`. `supabase/.temp/data.db` is the live local database (git-ignored) — this deleted the user's notes. On their restart the DB was recreated empty, but the browser still held a session token for a now-nonexistent user, so reads returned nothing and inserts failed the `notes.user_id → auth.users(id)` FK.
+- data recovery: NOT possible — the db file is git-ignored, not in version control. Acknowledged to user.
+- process fix: never delete `supabase/.temp` again; only remove `dist/` in cleanup.
+- app robustness fix (so a reset can't leave the app wedged):
+  - `useAuth`: after `getSession()` (local only), call `getUser()` (server-validated). lite returns `403 user_not_found` for a ghost token → sign out + show login instead of a broken session.
+  - `Notes.createNote`: if an insert returns a `FOREIGN KEY` error, sign out cleanly with a friendly message (covers a session going stale mid-use).
+- verified in browser: signed up testuser (session stored) → reset DB under it → reload now shows the login screen and clears the stale token from localStorage (previously: FK error). Fresh signup → create note works again. `tsc -b` + `bun run build` clean.
