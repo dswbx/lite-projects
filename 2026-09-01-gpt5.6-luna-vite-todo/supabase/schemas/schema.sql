@@ -1,0 +1,1 @@
+-- This is a schema file for the database
