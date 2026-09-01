@@ -7,9 +7,11 @@ See [`AGENTS.md`](./AGENTS.md) for the protocol agents follow.
 ## Models tested
 
 - Claude Opus 4.7 (`opus47`)
+- Claude Opus 4.8 (`opus48`)
 - Claude Sonnet 4.6 (`sonnet46`)
 - GPT-5 (`gpt5`)
 - GPT 5.5 (`gpt5.5`)
+- GPT 5.6 (`gpt5.6`)
 - Cursor Composer 2 (`composer2`)
 - Cursor Composer 2.5 (`composer25`)
 - Gemini 3.1 Pro (`gemini31pro`)
