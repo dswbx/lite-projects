@@ -48,3 +48,24 @@
 ### 2026-09-01T17:14:10Z — exclude generated Vite cache from commit
 - observed: the running dev server created `./.vite/deps/` cache files after the directory rename.
 - action: added `.vite` to the project `.gitignore` and moved the cache to `/private/tmp/daymark-vite-cache-20260901` so it can be regenerated without entering the source commit.
+
+### 2026-09-01T17:20:00Z — plan due dates and filters
+- assumed: due dates are optional so existing tasks and undated tasks remain valid.
+- assumed: “Due today” includes tasks with today’s local calendar date; “Overdue” includes unfinished tasks with a due date before today, while completed overdue tasks are no longer actionable.
+- assumed: store dates as ISO `date` values (`YYYY-MM-DD`) rather than timestamps so filtering is stable across time zones.
+
+### 2026-09-01T17:22:10Z — re-read Supalite package guidance
+- fetched: installed package files `node_modules/@supabase/lite/LIMITATIONS.md`, `README.md`, and `PATTERNS.md` (why: confirm the supported SQLite date/migration path and preserve the existing per-user RLS pattern before changing the schema).
+- outcome: used a nullable Postgres `date` column in an additive migration; kept RLS policies unchanged because the new field is inside the existing protected row.
+
+### 2026-09-01T17:24:05Z — due-date migration applied
+- observed: the running Vite/Supalite server reported `✓ Applied 20260901180000_add_due_date_to_tasks.sql`.
+- outcome: existing database data remained available while the new column was added.
+
+### 2026-09-01T17:25:40Z — due-date persistence and filter smoke test
+- ran a local Node HTTP smoke test against `http://127.0.0.1:5173`.
+- outcome: persisted today (`2026-09-01`), yesterday (`2026-08-31`), and null due dates; computed `all=3`, `dueToday=1`, `overdue=1`; after completing the overdue task, `overdue=0`.
+
+### 2026-09-01T17:18:52Z — final due-date verification
+- ran `npm run build` and `git diff --check`.
+- outcome: TypeScript/Vite production build passed; no whitespace errors; due-date changes remain uncommitted for human review.

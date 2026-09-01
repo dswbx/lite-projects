@@ -23,12 +23,13 @@ Daymark is a quiet, personal to-do list. Create a private account, keep your nex
 ## Use the app
 
 1. Choose **Create account**, enter your email and a password with at least six characters, then choose **Make my list**. If you already have an account, choose **Sign in** instead.
-2. Type a task into **What needs your attention?** and choose **Add task**. Pressing Enter also adds it.
-3. Select the circle beside a task to mark it complete. Select it again to make it active.
-4. Select the trash icon to delete a task.
-5. The account indicator in the top-right shows who is signed in. Use its sign-out button to leave the list.
+2. Type a task into **What needs your attention?**, choose an optional **Due date**, and select **Add task**. Pressing Enter also adds it.
+3. Use **All**, **Due today**, or **Overdue** above the list to change what you see. Overdue shows unfinished tasks whose date has passed.
+4. Select the circle beside a task to mark it complete. Select it again to make it active.
+5. Select the trash icon to delete a task.
+6. The account indicator in the top-right shows who is signed in. Use its sign-out button to leave the list.
 
-Each account has its own task list. The app stores the data in the local Supalite workspace, and the database rules also prevent one signed-in account from reading or changing another account’s tasks.
+Each account has its own task list. The app stores the data in the local Supalite workspace, and the database rules also prevent one signed-in account from reading or changing another account’s tasks. Tasks without a date remain visible under **All**.
 
 ## Troubleshooting
 

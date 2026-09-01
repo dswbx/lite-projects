@@ -7,16 +7,19 @@ type TaskListProps = {
   busyTaskId: string | null;
   onToggle: (task: Task) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  today: string;
+  emptyTitle?: string;
+  emptyBody?: string;
 };
 
-export function TaskList({ tasks, busyTaskId, onToggle, onDelete }: TaskListProps) {
+export function TaskList({ tasks, busyTaskId, onToggle, onDelete, today, emptyTitle = "Nothing on the slate yet.", emptyBody = "Add one small thing above. Momentum likes a short list." }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="empty-state">
         <div className="empty-state__icon"><ListChecks size={24} strokeWidth={1.6} /></div>
         <p className="eyebrow">Clear runway</p>
-        <h3>Nothing on the slate yet.</h3>
-        <p>Add one small thing above. Momentum likes a short list.</p>
+        <h3>{emptyTitle}</h3>
+        <p>{emptyBody}</p>
       </div>
     );
   }
@@ -30,6 +33,7 @@ export function TaskList({ tasks, busyTaskId, onToggle, onDelete }: TaskListProp
           busy={busyTaskId === task.id}
           onToggle={onToggle}
           onDelete={onDelete}
+          today={today}
         />
       ))}
     </ul>

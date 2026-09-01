@@ -3,8 +3,10 @@ import { LogOut, Sparkles } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import { AuthPanel } from "./components/AuthPanel";
 import { TaskComposer } from "./components/TaskComposer";
+import { TaskFilters, type TaskFilter } from "./components/TaskFilters";
 import { TaskList } from "./components/TaskList";
 import { supabase, type Task } from "./lib/supabase";
+import { dueState, todayKey } from "./lib/dates";
 
 type AuthMode = "signin" | "signup";
 
@@ -17,6 +19,7 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<TaskFilter>("all");
 
   async function loadTasks(userId: string) {
     setIsLoadingTasks(true);
@@ -52,7 +55,10 @@ function App() {
       setAuthError(null);
       setAuthMessage(null);
       if (nextSession) void loadTasks(nextSession.user.id);
-      else setTasks([]);
+      else {
+        setTasks([]);
+        setFilter("all");
+      }
       setIsLoading(false);
     });
 
@@ -79,12 +85,12 @@ function App() {
     }
   }
 
-  async function handleCreate(title: string) {
+  async function handleCreate(title: string, dueDate: string | null) {
     if (!session) return;
     setTaskError(null);
     const { data, error } = await supabase
       .from("tasks")
-      .insert({ user_id: session.user.id, title })
+      .insert({ user_id: session.user.id, title, due_date: dueDate })
       .select()
       .single();
     if (error) {
@@ -136,6 +142,14 @@ function App() {
   const completedCount = useMemo(() => tasks.filter((task) => task.completed).length, [tasks]);
   const remainingCount = tasks.length - completedCount;
   const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
+  const today = todayKey();
+  const visibleTasks = useMemo(() => tasks.filter((task) => {
+    if (filter === "all") return true;
+    if (filter === "today") return task.due_date === today;
+    return dueState(task.due_date, task.completed, today) === "overdue";
+  }), [filter, tasks, today]);
+  const emptyTitle = filter === "today" ? "No tasks due today." : filter === "overdue" ? "You’re all caught up." : undefined;
+  const emptyBody = filter === "today" ? "Choose a due date above when something needs a place on today’s page." : filter === "overdue" ? "Nothing unfinished is past its date. Keep that clear feeling." : undefined;
 
   if (isLoading) {
     return <main className="loading-screen"><div className="loading-stamp">daymark<span>.</span></div></main>;
@@ -184,8 +198,9 @@ function App() {
           </div>
           <TaskComposer onCreate={handleCreate} disabled={isLoadingTasks} />
           {taskError && <p className="form-message form-message--error task-error" role="alert">{taskError}</p>}
-          <div className="list-heading"><span>Tasks</span><span>{tasks.length === 0 ? "A fresh page" : `${tasks.length} ${tasks.length === 1 ? "item" : "items"}`}</span></div>
-          <TaskList tasks={tasks} busyTaskId={busyTaskId} onToggle={handleToggle} onDelete={handleDelete} />
+          <TaskFilters value={filter} onChange={setFilter} tasks={tasks} today={today} />
+          <div className="list-heading"><span>{filter === "all" ? "Tasks" : filter === "today" ? "Due today" : "Overdue"}</span><span>{visibleTasks.length === 0 ? "A fresh page" : `${visibleTasks.length} ${visibleTasks.length === 1 ? "item" : "items"}`}</span></div>
+          <TaskList tasks={visibleTasks} busyTaskId={busyTaskId} onToggle={handleToggle} onDelete={handleDelete} today={today} emptyTitle={emptyTitle} emptyBody={emptyBody} />
           <p className="privacy-line">Only you can see and change these tasks.</p>
         </section>
       )}
