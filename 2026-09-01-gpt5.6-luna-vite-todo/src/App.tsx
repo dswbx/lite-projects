@@ -5,8 +5,8 @@ import { AuthPanel } from "./components/AuthPanel";
 import { TaskComposer } from "./components/TaskComposer";
 import { TaskFilters, type TaskFilter } from "./components/TaskFilters";
 import { TaskList } from "./components/TaskList";
-import { supabase, type Task } from "./lib/supabase";
-import { dueState, todayKey } from "./lib/dates";
+import { supabase, type Recurrence, type Task } from "./lib/supabase";
+import { addDays, dueState, formatDueDate, todayKey } from "./lib/dates";
 
 type AuthMode = "signin" | "signup";
 
@@ -19,11 +19,13 @@ function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [taskError, setTaskError] = useState<string | null>(null);
+  const [taskMessage, setTaskMessage] = useState<string | null>(null);
   const [filter, setFilter] = useState<TaskFilter>("all");
 
   async function loadTasks(userId: string) {
     setIsLoadingTasks(true);
     setTaskError(null);
+    setTaskMessage(null);
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
@@ -85,12 +87,19 @@ function App() {
     }
   }
 
-  async function handleCreate(title: string, dueDate: string | null) {
+  async function handleCreate(title: string, dueDate: string | null, recurrence: Recurrence) {
     if (!session) return;
     setTaskError(null);
+    setTaskMessage(null);
     const { data, error } = await supabase
       .from("tasks")
-      .insert({ user_id: session.user.id, title, due_date: dueDate })
+      .insert({
+        user_id: session.user.id,
+        title,
+        due_date: dueDate,
+        recurrence,
+        series_id: recurrence === "daily" ? crypto.randomUUID() : null,
+      })
       .select()
       .single();
     if (error) {
@@ -103,15 +112,58 @@ function App() {
   async function handleToggle(task: Task) {
     setBusyTaskId(task.id);
     setTaskError(null);
+    setTaskMessage(null);
+    const nextCompleted = !task.completed;
+    const shouldCreateNext = nextCompleted && task.recurrence === "daily" && task.due_date !== null && task.series_id !== null;
     const { error } = await supabase
       .from("tasks")
-      .update({ completed: !task.completed })
+      .update({ completed: nextCompleted })
       .eq("id", task.id)
       .eq("user_id", task.user_id);
     if (error) {
       setTaskError(error.message);
     } else {
-      setTasks((current) => current.map((item) => item.id === task.id ? { ...item, completed: !item.completed } : item));
+      const completedTask = { ...task, completed: nextCompleted };
+      let nextOccurrence: Task | null = null;
+
+      if (shouldCreateNext && task.due_date !== null && task.series_id !== null) {
+        const nextDueDate = addDays(task.due_date, 1);
+        const { data: existingRows, error: existingError } = await supabase
+          .from("tasks")
+          .select("*")
+          .eq("user_id", task.user_id)
+          .eq("series_id", task.series_id)
+          .eq("due_date", nextDueDate)
+          .limit(1);
+
+        if (existingError) {
+          setTaskError(existingError.message);
+        } else if (!existingRows || existingRows.length === 0) {
+          const { data: createdNext, error: nextError } = await supabase
+            .from("tasks")
+            .insert({
+              user_id: task.user_id,
+              title: task.title,
+              due_date: nextDueDate,
+              recurrence: "daily",
+              series_id: task.series_id,
+            })
+            .select()
+            .single();
+
+          if (nextError) {
+            setTaskError(nextError.message);
+          } else if (createdNext) {
+            nextOccurrence = createdNext as Task;
+            setTaskMessage(`Next occurrence added for ${formatDueDate(nextDueDate)}.`);
+          }
+        }
+      }
+
+      setTasks((current) => {
+        const updated = current.map((item) => item.id === task.id ? completedTask : item);
+        return nextOccurrence ? [nextOccurrence, ...updated] : updated;
+      });
     }
     setBusyTaskId(null);
   }
@@ -120,6 +172,7 @@ function App() {
     if (!session) return;
     setBusyTaskId(id);
     setTaskError(null);
+    setTaskMessage(null);
     const { error } = await supabase
       .from("tasks")
       .delete()
@@ -135,6 +188,7 @@ function App() {
 
   async function handleSignOut() {
     setTaskError(null);
+    setTaskMessage(null);
     const { error } = await supabase.auth.signOut();
     if (error) setAuthError(error.message);
   }
@@ -198,6 +252,7 @@ function App() {
           </div>
           <TaskComposer onCreate={handleCreate} disabled={isLoadingTasks} />
           {taskError && <p className="form-message form-message--error task-error" role="alert">{taskError}</p>}
+          {taskMessage && <p className="form-message form-message--success task-message" role="status">{taskMessage}</p>}
           <TaskFilters value={filter} onChange={setFilter} tasks={tasks} today={today} />
           <div className="list-heading"><span>{filter === "all" ? "Tasks" : filter === "today" ? "Due today" : "Overdue"}</span><span>{visibleTasks.length === 0 ? "A fresh page" : `${visibleTasks.length} ${visibleTasks.length === 1 ? "item" : "items"}`}</span></div>
           <TaskList tasks={visibleTasks} busyTaskId={busyTaskId} onToggle={handleToggle} onDelete={handleDelete} today={today} emptyTitle={emptyTitle} emptyBody={emptyBody} />

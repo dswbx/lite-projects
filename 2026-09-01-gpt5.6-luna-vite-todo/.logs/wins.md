@@ -15,3 +15,7 @@
 - `alter table public.tasks add column due_date date;` applied on boot without rewriting or dropping existing task rows.
 - why it mattered: date support could ship without a reset or account migration, and undated tasks remain valid.
 - Supalite-specific win: the SQLite/Postgres translator accepted the portable `date` column and the existing RLS policies continued to protect the expanded row.
+
+### 2026-09-01T17:31:30Z — daily series stays self-contained
+- Each daily task carries a `series_id`, so the next-occurrence check is scoped to the current user, series, and date rather than guessing from a task title.
+- why it mattered: two daily lists can share the same title without suppressing each other’s next occurrence, and repeat attempts do not duplicate a date.

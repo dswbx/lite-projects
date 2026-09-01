@@ -14,6 +14,12 @@ export function formatDueDate(dateKey: string) {
   );
 }
 
+export function addDays(dateKey: string, days: number) {
+  const date = new Date(`${dateKey}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return todayKey(date);
+}
+
 export function dueState(dueDate: string | null, completed: boolean, today = todayKey()): DueState {
   if (!dueDate) return null;
   if (dueDate === today) return "today";

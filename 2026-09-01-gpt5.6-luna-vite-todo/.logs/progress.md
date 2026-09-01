@@ -69,3 +69,35 @@
 ### 2026-09-01T17:18:52Z — final due-date verification
 - ran `npm run build` and `git diff --check`.
 - outcome: TypeScript/Vite production build passed; no whitespace errors; due-date changes remain uncommitted for human review.
+
+### 2026-09-01T17:30:00Z — plan recurring daily tasks
+- assumed: add a `recurrence` value (`none` or `daily`) and a nullable `series_id` so each daily task chain can identify its own next occurrence, even when two series share the same title.
+- assumed: daily recurrence requires a due date at creation; existing tasks migrate to `none` and remain unchanged.
+- assumed: completion creates the next occurrence at the following local calendar date, leaves the completed source row visible, and avoids duplicates by checking the same series/date before inserting.
+
+### 2026-09-01T17:32:10Z — re-read Supalite recurring-task guidance
+- fetched: installed package files `node_modules/@supabase/lite/LIMITATIONS.md`, `README.md`, and `PATTERNS.md` (why: confirm additive migration syntax, SQLite-supported literal/check expressions, and continued RLS ownership behavior).
+- outcome: recurrence metadata uses literal values (`none`/`daily`), the series index is additive, and no RLS policy changes are required.
+
+### 2026-09-01T17:34:20Z — adjust recurring smoke-test scope
+- attempted: mark a daily task complete through a direct REST `PATCH` and expected the client-generated next row.
+- outcome: the direct update correctly changed the source row but produced no next row because the follow-up insert is intentionally owned by the signed-in app handler, not a database trigger.
+- correction: replay the authenticated update, same-series/date lookup, and insert sequence used by `handleToggle` in the next smoke test; this is a test-harness correction, not Supalite friction.
+
+### 2026-09-01T17:32:10Z — recurring migration applied
+- observed: the running Vite/Supalite server reported `✓ Applied 20260901190000_add_daily_recurrence_to_tasks.sql`.
+- outcome: existing tasks remained valid through the default `recurrence = 'none'`; the new series index was created without a database reset.
+
+### 2026-09-01T17:31:30Z — recurring-task smoke test
+- ran the authenticated update, same-series/date lookup, and insert sequence against `http://127.0.0.1:5173`.
+- outcome: daily occurrences advanced from `2026-09-01` to `2026-09-02` to `2026-09-03`; one-off completion created no extra row; duplicate guard returned the existing next occurrence.
+
+### 2026-09-01T17:35:58Z — final recurring-task verification
+- corrected `handleToggle` to preserve the requested checked/unchecked state while only creating the next occurrence on a transition to complete.
+- ran `npm run build` and `git diff --check`.
+- ran an authenticated live smoke test against the local Vite/Supalite server; completion produced two dated rows, the duplicate guard passed, re-opening persisted as incomplete, and temporary rows were cleaned up.
+- outcome: recurring-task changes are ready for human review and remain uncommitted.
+
+### 2026-09-01T17:39:00Z — commit and publish approved
+- user explicitly requested commit, push, and pull request creation.
+- confirmed the exact run attribution trailer from the existing GPT 5.6 Luna commit history: `Co-authored-by: GPT 5.6 Luna <noreply@openai.com>`.

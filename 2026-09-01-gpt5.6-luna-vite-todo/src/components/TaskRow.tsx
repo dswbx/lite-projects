@@ -1,4 +1,4 @@
-import { CalendarDays, Check, Trash2 } from "lucide-react";
+import { CalendarDays, Check, Repeat2, Trash2 } from "lucide-react";
 import type { Task } from "../lib/supabase";
 import { dueState, formatDueDate } from "../lib/dates";
 
@@ -27,11 +27,16 @@ export function TaskRow({ task, onToggle, onDelete, busy, today }: TaskRowProps)
       </button>
       <span className="task-copy">
         <span className="task-title">{task.title}</span>
-        {task.due_date && (
-          <span className={state ? `task-due task-due--${state}` : "task-due"}>
-            <CalendarDays size={13} aria-hidden="true" />
-            {state === "today" ? "Today" : state === "overdue" ? "Overdue" : formatDueDate(task.due_date)}
-            {state && <span className="task-due__date">· {formatDueDate(task.due_date)}</span>}
+        {(task.due_date || task.recurrence === "daily") && (
+          <span className="task-meta">
+            {task.due_date && (
+              <span className={state ? `task-due task-due--${state}` : "task-due"}>
+                <CalendarDays size={13} aria-hidden="true" />
+                {state === "today" ? "Today" : state === "overdue" ? "Overdue" : formatDueDate(task.due_date)}
+                {state && <span className="task-due__date">· {formatDueDate(task.due_date)}</span>}
+              </span>
+            )}
+            {task.recurrence === "daily" && <span className="task-repeat"><Repeat2 size={13} aria-hidden="true" /> Daily</span>}
           </span>
         )}
       </span>
