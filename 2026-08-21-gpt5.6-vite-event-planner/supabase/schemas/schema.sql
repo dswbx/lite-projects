@@ -1,0 +1,16 @@
+create table public.events (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, name text not null check (length(name) between 1 and 120), event_date date not null, location text not null check (length(location) between 1 and 180), created_at timestamptz not null default now(), updated_at timestamptz not null default now(), unique (id, user_id));
+create table public.guests (id uuid primary key default gen_random_uuid(), event_id uuid not null, user_id uuid not null references auth.users(id) on delete cascade, name text not null check (length(name) between 1 and 120), email text, rsvp text not null default 'pending' check (rsvp in ('pending', 'going', 'maybe', 'declined')), created_at timestamptz not null default now(), foreign key (event_id, user_id) references public.events(id, user_id) on delete cascade);
+create index events_user_date_idx on public.events(user_id, event_date);
+create index guests_event_idx on public.guests(event_id);
+alter table public.events enable row level security;
+alter table public.guests enable row level security;
+create policy "Users can view their own events" on public.events for select to authenticated using (auth.uid() = user_id);
+create policy "Users can create their own events" on public.events for insert to authenticated with check (auth.uid() = user_id);
+create policy "Users can update their own events" on public.events for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users can delete their own events" on public.events for delete to authenticated using (auth.uid() = user_id);
+create policy "Users can view their own guests" on public.guests for select to authenticated using (auth.uid() = user_id);
+create policy "Users can add their own guests" on public.guests for insert to authenticated with check (auth.uid() = user_id);
+create policy "Users can update their own guests" on public.guests for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "Users can delete their own guests" on public.guests for delete to authenticated using (auth.uid() = user_id);
+create or replace function public.set_updated_at() returns trigger language plpgsql as $$ begin new.updated_at = now(); return new; end; $$;
+create trigger events_updated_at before update on public.events for each row execute function public.set_updated_at();
