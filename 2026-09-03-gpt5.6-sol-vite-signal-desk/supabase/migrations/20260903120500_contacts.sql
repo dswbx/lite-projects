@@ -1,0 +1,22 @@
+create table public.contacts (
+  id text primary key default gen_random_uuid(),
+  workspace_id text not null references public.workspaces(id) on delete cascade,
+  account_id text references public.accounts(id) on delete set null,
+  first_name text not null check (first_name <> ''),
+  last_name text not null check (last_name <> ''),
+  email text,
+  phone text,
+  title text,
+  department text,
+  lifecycle_stage text not null default 'lead' check (lifecycle_stage in ('lead', 'qualified', 'customer', 'former_customer')),
+  preferred_channel text not null default 'email' check (preferred_channel in ('email', 'phone', 'social')),
+  owner_id uuid not null references auth.users(id),
+  created_by uuid not null references auth.users(id),
+  created_by_status text not null default 'active' check (created_by_status in ('invited', 'active', 'suspended')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  archived_at timestamptz,
+  unique (workspace_id, email),
+  foreign key (workspace_id, created_by) references public.workspace_members(workspace_id, user_id),
+  foreign key (workspace_id, created_by, created_by_status) references public.workspace_members(workspace_id, user_id, status) on update cascade
+);

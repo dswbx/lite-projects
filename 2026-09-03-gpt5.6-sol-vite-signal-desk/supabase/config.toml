@@ -1,0 +1,48 @@
+[api]
+port = 54321
+
+[db]
+driver = "sqlite-postgres"
+url = "file:./supabase/.temp/data.db"
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+jwt_secret = "dev-secret-change-me"
+jwt_expiry = 3600
+enable_signup = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173/auth/callback"]
+minimum_password_length = 10
+publishable_key = "env(SUPABASE_PUBLISHABLE_KEY)"
+secret_key = "env(SUPABASE_SECRET_KEY)"
+
+[auth.email]
+enable_confirmations = true
+double_confirm_changes = true
+otp_length = 6
+otp_expiry = 3600
+
+[auth.email.template.confirmation]
+subject = "Confirm your Signal Desk account"
+content_path = "./supabase/emails/confirmation.html"
+
+# Safe by default. To enable Google, set this to true and provide the two
+# environment variables below. The OAuth callback registered with Google is
+# http://localhost:5173/auth/v1/callback.
+[auth.external.google]
+enabled = false
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "http://localhost:5173/auth/v1/callback"
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"

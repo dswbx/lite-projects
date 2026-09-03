@@ -1,0 +1,43 @@
+create table public.quotes (
+  id text primary key default gen_random_uuid(),
+  workspace_id text not null references public.workspaces(id) on delete cascade,
+  quote_number text not null,
+  opportunity_id text not null references public.opportunities(id) on delete cascade,
+  price_book_id text references public.price_books(id) on delete set null,
+  status text not null default 'draft' check (status in ('draft', 'sent', 'accepted', 'rejected', 'expired')),
+  issued_at date,
+  expires_at date,
+  discount_percent numeric(5,2) not null default 0 check (discount_percent >= 0 and discount_percent <= 100),
+  subtotal_amount numeric(14,2) not null default 0 check (subtotal_amount >= 0),
+  tax_amount numeric(14,2) not null default 0 check (tax_amount >= 0),
+  total_amount numeric(14,2) not null default 0 check (total_amount >= 0),
+  notes text,
+  owner_id uuid not null references auth.users(id),
+  created_by uuid not null references auth.users(id),
+  created_by_status text not null default 'active' check (created_by_status in ('invited', 'active', 'suspended')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  archived_at timestamptz,
+  unique (workspace_id, quote_number),
+  foreign key (workspace_id, created_by) references public.workspace_members(workspace_id, user_id),
+  foreign key (workspace_id, created_by, created_by_status) references public.workspace_members(workspace_id, user_id, status) on update cascade
+);
+
+create table public.quote_lines (
+  id text primary key default gen_random_uuid(),
+  workspace_id text not null references public.workspaces(id) on delete cascade,
+  quote_id text not null references public.quotes(id) on delete cascade,
+  product_id text references public.products(id) on delete set null,
+  description text not null,
+  quantity numeric(10,2) not null default 1 check (quantity > 0),
+  unit_price numeric(12,2) not null default 0 check (unit_price >= 0),
+  discount_percent numeric(5,2) not null default 0 check (discount_percent >= 0 and discount_percent <= 100),
+  line_total numeric(14,2) not null default 0 check (line_total >= 0),
+  position integer not null default 0 check (position >= 0),
+  created_by uuid not null references auth.users(id),
+  created_by_status text not null default 'active' check (created_by_status in ('invited', 'active', 'suspended')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  foreign key (workspace_id, created_by) references public.workspace_members(workspace_id, user_id),
+  foreign key (workspace_id, created_by, created_by_status) references public.workspace_members(workspace_id, user_id, status) on update cascade
+);
