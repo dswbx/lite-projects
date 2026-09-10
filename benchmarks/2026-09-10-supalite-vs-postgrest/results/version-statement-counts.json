@@ -1,0 +1,30 @@
+{
+  "question": "Was supalite's chatty per-request statement pattern introduced after the published June 2026 benchmark?",
+  "method": "Same Postgres, same 100k-row schema (cloned database), same postgres driver, one GET /posts?select=id&limit=1, statements counted with pg_stat_statements.",
+  "answer": "No. The pattern already existed at 0.4.0, the release contemporary with that benchmark. It went from 7 to 9 statements, not from 1 or 2 to 9.",
+  "versions": [
+    {
+      "version": "0.4.0",
+      "published": "2026-05-29",
+      "note": "closest published release to the 2026-06-11 benchmark run",
+      "statements_per_request": 7,
+      "breakdown": {"begin": 1, "set_config": 3, "SET LOCAL ROLE": 1, "query": 1, "commit": 1}
+    },
+    {
+      "version": "0.10.0",
+      "published": "2026-09",
+      "note": "version benchmarked here",
+      "statements_per_request": 9,
+      "breakdown": {"begin": 1, "set_config": 5, "SET LOCAL ROLE": 1, "query": 1, "commit": 1}
+    },
+    {
+      "version": "0.10.0 (rpc)",
+      "statements_per_request": 14,
+      "note": "five extra set_config calls for the RPC request GUCs"
+    }
+  ],
+  "postgrest_16.2_for_reference": {
+    "statements_per_request": 2,
+    "breakdown": {"batched set_config": 1, "query": 1, "explicit transaction": 0}
+  }
+}

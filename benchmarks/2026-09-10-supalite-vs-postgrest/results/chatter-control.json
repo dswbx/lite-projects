@@ -1,0 +1,42 @@
+[
+  {
+    "shape": "postgrest",
+    "clients": 10,
+    "tps": 11186.6,
+    "latency_avg_ms": 0.894,
+    "pg_cores_busy": 1.824,
+    "pg_core_saturation": 0.912,
+    "pgbench_core_saturation": 0.618,
+    "statements_per_txn": 2
+  },
+  {
+    "shape": "postgrest",
+    "clients": 32,
+    "tps": 11783.9,
+    "latency_avg_ms": 2.716,
+    "pg_cores_busy": 1.8,
+    "pg_core_saturation": 0.9,
+    "pgbench_core_saturation": 0.651,
+    "statements_per_txn": 2
+  },
+  {
+    "shape": "supalite",
+    "clients": 10,
+    "tps": 2942.1,
+    "latency_avg_ms": 3.399,
+    "pg_cores_busy": 1.223,
+    "pg_core_saturation": 0.611,
+    "pgbench_core_saturation": 0.741,
+    "statements_per_txn": 9
+  },
+  {
+    "shape": "supalite",
+    "clients": 32,
+    "tps": 3510.4,
+    "latency_avg_ms": 9.116,
+    "pg_cores_busy": 1.44,
+    "pg_core_saturation": 0.72,
+    "pgbench_core_saturation": 0.763,
+    "statements_per_txn": 9
+  }
+]

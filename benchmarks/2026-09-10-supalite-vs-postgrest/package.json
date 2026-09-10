@@ -1,0 +1,19 @@
+{
+  "name": "supalite-vs-postgrest-benchmark",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LITE-421: HTTP benchmark of @supabase/lite (postgres driver) vs bare PostgREST against the same PostgreSQL instance",
+  "type": "module",
+  "scripts": {
+    "parity": "python3 bench/parity.py",
+    "profile": "python3 bench/statement-profile.py",
+    "bench": "python3 bench/run.py --out results/main-1core-c32.json --duration 12 --warmup 4 --repeats 3 --connections 32",
+    "sweep": "bash bench/sweep.sh",
+    "control": "python3 bench/chatter-control.py",
+    "report": "python3 bench/build_results.py && python3 bench/build_chart.py"
+  },
+  "dependencies": {
+    "@supabase/lite": "^0.10.0",
+    "postgres": "^3.4.9"
+  }
+}

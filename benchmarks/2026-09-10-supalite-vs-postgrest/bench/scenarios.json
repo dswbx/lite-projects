@@ -1,0 +1,126 @@
+[
+  {
+    "id": "tiny-select",
+    "group": "read",
+    "desc": "Smallest possible read: 1 column, 1 row. Isolates fixed per-request cost (HTTP parse, auth, query build, txn, JSON).",
+    "method": "GET",
+    "path": "/posts?select=id&limit=1"
+  },
+  {
+    "id": "point-lookup",
+    "group": "read",
+    "desc": "Primary-key lookup returning a single JSON object (PostgREST singular media type).",
+    "method": "GET",
+    "path": "/posts?id=eq.%RAND%&select=*",
+    "rand_max": 100000,
+    "headers": ["Accept: application/vnd.pgrst.object+json"]
+  },
+  {
+    "id": "page-25",
+    "group": "read",
+    "desc": "Typical list page: 25 rows, 4 columns, ordered by PK.",
+    "method": "GET",
+    "path": "/posts?select=id,title,views,created_at&order=id&limit=25"
+  },
+  {
+    "id": "page-500-wide",
+    "group": "read",
+    "desc": "Serialization-heavy: 500 rows including a ~230-byte body column (~130 KB response).",
+    "method": "GET",
+    "path": "/posts?select=id,title,body&order=id&limit=500"
+  },
+  {
+    "id": "filter-order",
+    "group": "read",
+    "desc": "Two filters plus a descending order on an indexed column.",
+    "method": "GET",
+    "path": "/posts?published=eq.true&views=gte.5000&select=id,title,views&order=views.desc&limit=20"
+  },
+  {
+    "id": "in-list-50",
+    "group": "read",
+    "desc": "50-element in.() list: stresses query-string parsing and predicate building.",
+    "method": "GET",
+    "path": "/posts?id=in.(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50)&select=id,title"
+  },
+  {
+    "id": "embed-many-to-one",
+    "group": "read",
+    "desc": "Resource embedding across an FK: posts -> authors (many-to-one).",
+    "method": "GET",
+    "path": "/posts?select=id,title,authors(id,name)&order=id&limit=25"
+  },
+  {
+    "id": "embed-one-to-many",
+    "group": "read",
+    "desc": "Nested collection embedding: posts -> comments (one-to-many, ~4 comments/post).",
+    "method": "GET",
+    "path": "/posts?select=id,title,comments(id,body)&order=id&limit=10"
+  },
+  {
+    "id": "embed-many-to-many",
+    "group": "read",
+    "desc": "Many-to-many embedding through the post_tags junction table.",
+    "method": "GET",
+    "path": "/posts?select=id,title,tags(name)&order=id&limit=25"
+  },
+  {
+    "id": "count-exact",
+    "group": "read",
+    "desc": "Prefer: count=exact over 100k rows. Postgres-bound on both sides; a control for how much of the gap is the API layer.",
+    "method": "GET",
+    "path": "/posts?select=id&order=id&limit=10",
+    "headers": ["Prefer: count=exact"]
+  },
+  {
+    "id": "full-text-search",
+    "group": "read",
+    "desc": "Native tsquery full-text search against a GIN index.",
+    "method": "GET",
+    "path": "/posts?title=fts(english).benchmark&select=id,title&order=id&limit=20"
+  },
+  {
+    "id": "rls-read",
+    "group": "read",
+    "desc": "Read through a native Postgres RLS policy as role anon.",
+    "method": "GET",
+    "path": "/notes?select=id,body&order=id&limit=25"
+  },
+  {
+    "id": "rpc-stable",
+    "group": "read",
+    "desc": "POST to a STABLE SQL function (PostgREST/supalite rpc).",
+    "method": "POST",
+    "path": "/rpc/post_stats",
+    "body": "{\"p_author_id\":7}",
+    "headers": ["Content-Type: application/json"]
+  },
+  {
+    "id": "insert-minimal",
+    "group": "write",
+    "desc": "Single-row INSERT with Prefer: return=minimal (no response body).",
+    "method": "POST",
+    "path": "/events",
+    "body": "{\"kind\":\"click\",\"payload\":{\"path\":\"/pricing\",\"ms\":42}}",
+    "headers": ["Content-Type: application/json", "Prefer: return=minimal"]
+  },
+  {
+    "id": "insert-representation",
+    "group": "write",
+    "desc": "Single-row INSERT with Prefer: return=representation (row echoed back).",
+    "method": "POST",
+    "path": "/events",
+    "body": "{\"kind\":\"click\",\"payload\":{\"path\":\"/pricing\",\"ms\":42}}",
+    "headers": ["Content-Type: application/json", "Prefer: return=representation"]
+  },
+  {
+    "id": "update-by-pk",
+    "group": "write",
+    "desc": "PATCH one row by PK, random id per request to avoid row-lock contention.",
+    "method": "PATCH",
+    "path": "/posts?id=eq.%RAND%",
+    "rand_max": 100000,
+    "body": "{\"views\":1234}",
+    "headers": ["Content-Type: application/json", "Prefer: return=minimal"]
+  }
+]

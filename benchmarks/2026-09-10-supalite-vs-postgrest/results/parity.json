@@ -1,0 +1,130 @@
+[
+  {
+    "id": "tiny-select",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "point-lookup",
+    "group": "read",
+    "match": "OK",
+    "compare": "shape-only",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "page-25",
+    "group": "read",
+    "match": "OK",
+    "compare": "shape-only",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "page-500-wide",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "filter-order",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "in-list-50",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "embed-many-to-one",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "embed-one-to-many",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "embed-many-to-many",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "count-exact",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 206,
+    "postgrest_status": 206
+  },
+  {
+    "id": "full-text-search",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "rls-read",
+    "group": "read",
+    "match": "OK",
+    "compare": "exact",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "rpc-stable",
+    "group": "read",
+    "match": "MISMATCH",
+    "compare": "shape-only",
+    "supalite_status": 200,
+    "postgrest_status": 200
+  },
+  {
+    "id": "insert-minimal",
+    "group": "write",
+    "match": "OK",
+    "compare": "shape",
+    "supalite_status": 201,
+    "postgrest_status": 201
+  },
+  {
+    "id": "insert-representation",
+    "group": "write",
+    "match": "OK",
+    "compare": "shape",
+    "supalite_status": 201,
+    "postgrest_status": 201
+  },
+  {
+    "id": "update-by-pk",
+    "group": "write",
+    "match": "OK",
+    "compare": "shape",
+    "supalite_status": 204,
+    "postgrest_status": 204
+  }
+]

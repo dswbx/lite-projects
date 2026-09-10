@@ -1,0 +1,43 @@
+# Template. bench/kong-hop.py renders this into kong/kong.yml (gitignored) by
+# substituting the keys from .env, so no credential is ever committed.
+#
+# Mirrors the rest-v1 service from Supabase's self-hosted docker-compose kong.yml:
+# same plugin chain (cors -> key-auth -> acl), same consumers, same path strip.
+# The upstream url points at the PostgREST already running on the host, so the
+# only thing this adds over talking to PostgREST directly is the gateway itself.
+_format_version: '2.1'
+_transform: true
+
+consumers:
+  - username: anon
+    keyauth_credentials:
+      - key: __SUPABASE_PUBLISHABLE_KEY__
+  - username: service_role
+    keyauth_credentials:
+      - key: __SUPABASE_SECRET_KEY__
+
+acls:
+  - consumer: anon
+    group: anon
+  - consumer: service_role
+    group: admin
+
+services:
+  - name: rest-v1
+    url: http://127.0.0.1:3002/
+    routes:
+      - name: rest-v1-all
+        strip_path: true
+        paths:
+          - /rest/v1/
+    plugins:
+      - name: cors
+      - name: key-auth
+        config:
+          hide_credentials: true
+      - name: acl
+        config:
+          hide_groups_header: true
+          allow:
+            - admin
+            - anon

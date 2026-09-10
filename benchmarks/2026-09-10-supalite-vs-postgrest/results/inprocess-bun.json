@@ -1,0 +1,12 @@
+{
+  "label": "in-process",
+  "requests": 7804,
+  "wall_s": 12.027,
+  "rps": 648.9,
+  "cpu_s": 11.894,
+  "cpu_us_per_req": 1524.1,
+  "p50_ms": 44.278,
+  "p90_ms": 63.683,
+  "p99_ms": 121.448,
+  "concurrency": 32
+}

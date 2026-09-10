@@ -1,0 +1,9 @@
+# Third-party binary, ~20 MB — fetch it with the command in README.md instead
+postgrest/postgrest
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Rendered from kong/kong.yml.template at run time; contains API keys
+kong/kong.yml

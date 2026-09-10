@@ -1,0 +1,2 @@
+select set_config('search_path', 'public', true), set_config('role', 'anon', true), set_config('request.jwt.claims', '{"role":"anon"}', true), set_config('request.method', 'GET', true), set_config('request.path', '/posts', true), set_config('request.headers', '{}', true), set_config('request.cookies', '{}', true);
+WITH pgrst_source AS ( SELECT "public"."posts"."id" FROM "public"."posts" LIMIT 1 OFFSET 0 ) SELECT coalesce(json_agg(_postgrest_t), '[]') AS body FROM ( SELECT * FROM pgrst_source ) _postgrest_t;

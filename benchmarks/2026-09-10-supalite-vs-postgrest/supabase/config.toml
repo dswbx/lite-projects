@@ -1,0 +1,23 @@
+# supalite project used for the benchmark.
+# Data API only: [auth] and [storage] are off so this is a like-for-like
+# comparison against bare PostgREST (which ships no auth/storage either).
+
+[api]
+port = 3001
+schemas = ["public"]
+
+[db]
+driver = "postgres"
+url = "env(SUPALITE_DB_URL)"
+
+[db.migrations]
+schema_paths = []
+
+[auth]
+enabled = false
+jwt_secret = "bench-jwt-secret-at-least-32-chars-long!!"
+publishable_key = "env(SUPABASE_PUBLISHABLE_KEY)"
+secret_key = "env(SUPABASE_SECRET_KEY)"
+
+[storage]
+enabled = false
