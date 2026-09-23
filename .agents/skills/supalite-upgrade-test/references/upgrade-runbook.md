@@ -63,6 +63,24 @@ npm install "https://pkg.pr.new/supabase-community/lite/@supabase/lite@<n>"
 ```
 and use npm for the rest of that project's installs (note the switch; a `package-lock.json` will appear).
 
+## Bumping old projects (observed at `0.10.1-next.6`)
+
+### Old package name `lite-supa`
+Early projects depend on `lite-supa`, the old name of `@supabase/lite`. Remove it, add `@supabase/lite`, and change the Vite import. The plugin export name did not change:
+
+```diff
+-import { supalite } from "lite-supa/vite";
++import { supalite } from "@supabase/lite/vite";
+```
+
+Then `grep -rn "lite-supa" --exclude-dir=node_modules --exclude-dir=.logs .` must return nothing.
+
+### Pins that no longer install
+Some projects pin a `pkg.pr.new` URL (old preview builds now return 404) or a local `.tgz` file that is no longer on disk. Replace the pin with a registry version. Do not look for the old build. A `pkg.pr.new` build can also bring in packages the registry build does not (e.g. `@types/node`). If `bun run build` then fails on missing types, add them to `devDependencies`.
+
+### Stale local database
+An old `supabase/.temp/data.db` can fail to migrate `auth.*` tables after the bump. The dev server still starts. Read the whole boot log, check `/auth/v1/health` (not `/_system/*`, which returns 200 HTML for any path), and run `bunx lite db reset --hard` only if the log shows a migration error. See SKILL.md step 1.
+
 ## Teardown
 
 ```bash
