@@ -64,4 +64,4 @@ The local database and sign-in still expect `bun dev` for full functionality dur
 
 ## Technical note
 
-Built with React, Vite, Tailwind, and [Supabase Lite](https://github.com/supabase/lite) (`@supabase/lite` via pkg.pr.new build 203) for auth and data on your machine.
+Built with React, Vite, Tailwind, and [Supabase Lite](https://github.com/supabase/lite) (`@supabase/lite@0.10.1-next.6`) for auth and data on your machine.

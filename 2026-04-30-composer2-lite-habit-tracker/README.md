@@ -39,4 +39,4 @@ Data is stored in a small database on your machine while you use this mode (thro
 
 - `bun run build` creates a static production bundle in `dist/`. For a full local stack with API and auth like in dev, you would run the Supabase Lite server separately and point the built app at it; the comfortable path for daily use is `bun dev`.
 
-Built with React, TypeScript, Vite, Tailwind CSS, and **Supabase Lite** (`lite-supa`).
+Built with React, TypeScript, Vite, Tailwind CSS, and **Supabase Lite** (`@supabase/lite`).

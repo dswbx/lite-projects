@@ -8,8 +8,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/lite": "0.10.1-next.6",
     "@supabase/supabase-js": "^2.97.0",
-    "lite-supa": "0.3.0-canary-20260424070306-29f2906",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

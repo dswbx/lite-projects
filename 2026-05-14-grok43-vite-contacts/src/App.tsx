@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { createClient, User, Session } from '@supabase/supabase-js'
+import { createClient, type User, type Session } from '@supabase/supabase-js'
 import { Plus, Search, Edit2, Trash2, X, LogOut, User as UserIcon } from 'lucide-react'
 
 const supabase = createClient(window.location.origin, 'any-string-works-for-now')

@@ -51,4 +51,4 @@ This produces a static frontend in `dist/`. Note that this only builds the websi
 
 ## Stack
 
-Vite + React + TypeScript + Tailwind v4 on the front. [supabase/lite](https://github.com/supabase/lite) (`lite-supa`) for auth + REST + SQLite database, running as a Vite plugin in the same process. Schema lives in `supabase/migrations/*.sql` and is applied automatically by `bun dev`.
+Vite + React + TypeScript + Tailwind v4 on the front. [supabase/lite](https://github.com/supabase/lite) (`@supabase/lite`) for auth + REST + SQLite database, running as a Vite plugin in the same process. Schema lives in `supabase/migrations/*.sql` and is applied automatically by `bun dev`.

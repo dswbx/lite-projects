@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 export const supabase = createClient(
   window.location.origin,
-  'any-string-works-for-now',
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
 )
 
 export type JournalEntry = {

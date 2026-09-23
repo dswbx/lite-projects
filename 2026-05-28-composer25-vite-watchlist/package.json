@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@supabase/lite": "https://pkg.pr.new/supabase-community/lite/@supabase/lite@222",
+    "@supabase/lite": "0.10.1-next.6",
     "@supabase/supabase-js": "^2.106.2",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"

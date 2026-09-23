@@ -11,7 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@supabase/lite": "https://pkg.pr.new/supabase-community/lite/@supabase/lite@236",
+    "@supabase/lite": "0.10.1-next.6",
     "@supabase/supabase-js": "^2.49.1",
     "postgres": "^3.4.9",
     "react": "^19.1.0",
@@ -21,6 +21,7 @@
     "@eslint/js": "^9.25.0",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.1.7",
+    "@types/node": "^25.9.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",

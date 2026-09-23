@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/lite": "0.10.1-next.6",
     "@supabase/supabase-js": "^2.97.0",
-    "lite-supa": "latest",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

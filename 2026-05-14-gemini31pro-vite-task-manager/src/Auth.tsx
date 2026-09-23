@@ -17,7 +17,7 @@ export function Auth() {
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        // In lite-supa, signup might auto-login or require confirmation depending on config.
+        // In @supabase/lite, signup might auto-login or require confirmation depending on config.
         // We set enable_confirmations = false in config.toml usually, but let's just show a message or let onAuthStateChange handle it.
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
