@@ -1,0 +1,23 @@
+create table public.accounts (
+  id text primary key default gen_random_uuid(),
+  workspace_id text not null references public.workspaces(id) on delete cascade,
+  name text not null check (name <> ''),
+  domain text,
+  industry text,
+  segment text not null default 'smb' check (segment in ('smb', 'mid_market', 'enterprise')),
+  lifecycle_stage text not null default 'prospect' check (lifecycle_stage in ('prospect', 'qualified', 'customer', 'partner', 'inactive')),
+  employee_count integer check (employee_count is null or employee_count >= 0),
+  annual_revenue numeric(14,2) check (annual_revenue is null or annual_revenue >= 0),
+  phone text,
+  website text,
+  address jsonb not null default '{}'::jsonb,
+  owner_id uuid not null references auth.users(id),
+  created_by uuid not null references auth.users(id),
+  created_by_status text not null default 'active' check (created_by_status in ('invited', 'active', 'suspended')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  archived_at timestamptz,
+  unique (workspace_id, name),
+  foreign key (workspace_id, created_by) references public.workspace_members(workspace_id, user_id),
+  foreign key (workspace_id, created_by, created_by_status) references public.workspace_members(workspace_id, user_id, status) on update cascade
+);
