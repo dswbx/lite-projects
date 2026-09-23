@@ -27,7 +27,7 @@ At-a-glance index of which generated projects have been through the [`supalite-u
 | 2026-05-28-composer25-vite-watchlist | ⬜ pending | – | – | – | – | – |
 | 2026-05-28-gpt5.3-vite-project-board | ⬜ pending | – | – | – | – | – |
 | 2026-05-28-gpt5.5-vite-password-vault | ⬜ pending | – | – | – | – | – |
-| 2026-05-28-opus47-vite-inventory | ♻️ stale | 7 | auth (signup/signin/signout), items CRUD, category+location filters, RLS cross-user isolation | 0.5.0 (project now on 0.10.1-next.6) | 7/7 ↔ 7/7 | 2026-06-18 |
+| 2026-05-28-opus47-vite-inventory | ✅ done | 7 | auth (signup/signin/signout), items CRUD, category+location filters, RLS cross-user isolation | 0.10.1-next.7 | 7/7 ↔ 7/7 | 2026-09-23 |
 | 2026-05-29-composer25-vite-event-planner | ♻️ stale | 7 | auth (signup/signin/signout), event+guest CRUD, RSVP summary, RLS cross-user isolation | canary @236 (project now on 0.10.1-next.6) | 7/7 ↔ 7/7 | 2026-06-10 |
 | 2026-07-22-opus48-vite-notes | ⬜ pending | – | – | – | – | – |
 | 2026-08-21-gpt5.6-vite-event-planner | ⬜ pending | 1 (not from this skill) | event create + list | – | – | – |
@@ -35,12 +35,10 @@ At-a-glance index of which generated projects have been through the [`supalite-u
 
 ## Version drift (2026-09-23)
 
-All 24 projects were upgraded to `@supabase/lite@0.10.1-next.6` in one pass. See PR [#70](https://github.com/dswbx/lite-projects/pull/70).
+All 24 projects were upgraded to `@supabase/lite@0.10.1-next.6` in one pass. See PR [#70](https://github.com/dswbx/lite-projects/pull/70). That pass re-ran the existing Playwright suites **unchanged against local supalite only**. It did **not** run `lite upgrade` or re-run the suites against full Supabase.
 
-That pass re-ran the existing Playwright suites **unchanged against local supalite only**. Both suites still pass 7/7 at `0.10.1-next.6`. So the **baseline** half of each gate is current.
+`2026-05-28-opus47-vite-inventory` was then bumped to `0.10.1-next.7` and got a full re-run of the skill (baseline and upgraded, both 7/7). Its row is `✅ done`.
 
-It did **not** run `lite upgrade` or re-run either suite against full Supabase. The `↔ upgraded` half of both results still dates from the older lite version in the table. That is why both rows are marked `♻️ stale` rather than `✅ done`.
-
-To clear the stale marks, re-run the `supalite-upgrade-test` skill on those two projects at `0.10.1-next.6` and update the version, result, and date cells.
+`2026-05-29-composer25-vite-event-planner` is still `♻️ stale`. Its baseline passes 7/7 at `0.10.1-next.6`, but the `↔ upgraded` half still dates from canary @236. To clear it, re-run the `supalite-upgrade-test` skill on it and update the version, result, and date cells.
 
 `2026-08-21-gpt5.6-vite-event-planner` has its own single Playwright test that predates this skill. It also passes at `0.10.1-next.6`, but it was never part of an upgrade gate, so the project stays `⬜ pending` here.

@@ -9,13 +9,16 @@ Goal: one suite that runs against supalite (default) and full Supabase (env over
 ```ts
 import { createClient } from "@supabase/supabase-js";
 
-// Unset → in-Vite supalite (same-origin API, any non-empty key).
-// Set → full Supabase (e.g. after `lite upgrade`). Same app, either backend.
-const url = import.meta.env.VITE_SUPABASE_URL ?? window.location.origin;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "any-string-works-for-now";
-
-export const supabase = createClient(url, key);
+// Not set in the shell → the supalite Vite plugin injects the page origin
+// and the project's real publishable key.
+// Set in the shell → full Supabase (e.g. after `lite upgrade`). Same app, either backend.
+export const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+);
 ```
+
+Do not hardcode a key or add a string fallback such as `?? "any-string"`. When `config.toml` sets `auth.publishable_key`, supalite enforces API keys and rejects a made-up key. Check the installed `docs/integrations/vite.mdx` for the current injection rules.
 
 Declare the vars for TypeScript in `src/vite-env.d.ts`:
 
@@ -64,7 +67,8 @@ export default defineConfig({
   reporter: [["list"]],
   use: { baseURL, trace: "on-first-retry" },
   webServer: {
-    command: "bun run dev",
+    // pass the port so E2E_BASE_URL on a non-default port works
+    command: `bun run dev -- --port ${new URL(baseURL).port || 5173} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

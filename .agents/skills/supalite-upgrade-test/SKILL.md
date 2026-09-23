@@ -17,15 +17,18 @@ This is the maintainer-intended verification loop (see `node_modules/@supabase/l
 
 ## Workflow
 
-1. **Bump `@supabase/lite` to latest, then cold-start the docs.** These projects pin old canary/pre-release versions that usually predate or lag the `lite upgrade` command — **bump without asking**: `bun add @supabase/lite@latest` (or `npm install @supabase/lite@latest` for an npm-locked project). The baseline must end up green on the bumped version anyway, so an old pin only hides upgrade-path bugs. Then read the installed docs: `cat node_modules/@supabase/lite/{LIMITATIONS,README,UPGRADE}.md` and confirm the CLI: `bunx lite upgrade --help`. (Use the `supalite` skill for base API/limitations.) If the bump breaks the supalite baseline, fix minimally and log it as a `@supabase/lite` friction.
+1. **Bump `@supabase/lite` to the newest release, then cold-start the docs.** These projects pin old canary/pre-release versions that usually predate or lag the `lite upgrade` command — **bump without asking**. Check the dist-tags first: `npm view @supabase/lite dist-tags`. `latest` can be older than `next`, so pick the highest version, not the `latest` tag, and never downgrade the project's current pin. Pin it exactly: `bun add @supabase/lite@<version> --exact` (or `npm install @supabase/lite@<version> --save-exact` for an npm-locked project). The baseline must end up green on the bumped version anyway, so an old pin only hides upgrade-path bugs. See the runbook for old package names and pins that no longer install. Then read the installed docs: `cat node_modules/@supabase/lite/{LIMITATIONS,README,UPGRADE}.md` and confirm the CLI: `bunx lite upgrade --help`. (Use the `supalite` skill for base API/limitations.) If the bump breaks the supalite baseline, fix minimally and log it as a `@supabase/lite` friction.
+
+   **After the bump, boot the app and read the whole dev-server log.** An old `supabase/.temp/data.db` from an earlier version can fail to migrate the `auth.*` tables (e.g. `Migration error: cannot INSERT into generated column "confirmed_at"`). The server still starts. Depending on the version, auth may fail completely (seen at `0.10.1-next.6`) or keep working (seen at `0.10.1-next.7`). The error line in the log is the only reliable signal: `/auth/v1/health` returns 200 either way, and `/_system/*` returns 200 HTML for any path. If the log shows a migration error, run `bunx lite db reset --hard` and log it as a friction. Do not reset when the log is clean.
 
 2. **Make the client URL/key env-configurable** so one build targets either backend. See `references/playwright-setup.md`. The pattern:
    ```ts
-   const url = import.meta.env.VITE_SUPABASE_URL ?? window.location.origin;
-   const key = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "any-string-works-for-now";
-   export const supabase = createClient(url, key);
+   export const supabase = createClient(
+     import.meta.env.VITE_SUPABASE_URL,
+     import.meta.env.VITE_SUPABASE_ANON_KEY,
+   );
    ```
-   In a Vite app, also skip the embedded supalite plugin when `VITE_SUPABASE_URL` is set (so it doesn't bind the port / read a rewritten config). See the runbook.
+   The supalite Vite plugin injects both values (the page origin and the project's real publishable key). A shell env var overrides them for the upgraded run. Do not hardcode a key or add a string fallback: if `config.toml` sets `auth.publishable_key`, key enforcement is on and a made-up key is rejected. If the project already has a fallback like `?? "anon-key"`, remove it. Under the plugin it never runs, but it hides a missing env var on the upgraded run. In a Vite app, also skip the embedded supalite plugin when `VITE_SUPABASE_URL` is set (so it doesn't bind the port / read a rewritten config). See the runbook.
 
 3. **Scaffold Playwright** with an env-driven `baseURL` and a `webServer` that inherits `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`. Template in `references/playwright-setup.md`.
 
@@ -33,7 +36,7 @@ This is the maintainer-intended verification loop (see `node_modules/@supabase/l
 
 5. **Baseline: run e2e against supalite** (no env vars → Vite plugin path). Must be all-green before upgrading. A red baseline means fix tests/app first; do not upgrade on red.
 
-6. **Upgrade to local Supabase** (default verification target — no cloud, no PAT): `lite upgrade --dry-run` (readiness + rehearsal) then `lite upgrade --target local --force --no-migrate-sessions`. Read the new API URL + anon key from the command output (or `supabase status -o json`). The runbook covers the bun-runtime and `postgres`-driver gotchas and how to keep it non-destructive.
+6. **Upgrade to local Supabase** (default verification target — no cloud, no PAT): `lite upgrade --dry-run` (readiness + rehearsal; a project with only `schemas/*.sql` first needs `lite db diff -f prepare_upgrade`, see runbook) then `lite upgrade --target local --force --no-migrate-sessions`. Read the new API URL + anon key from the command output (or `supabase status -o json`). The runbook covers the bun-runtime and `postgres`-driver gotchas and how to keep it non-destructive.
 
 7. **Re-run the SAME suite against upgraded Supabase**: set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` and run `test:e2e` again. **Assert the same pass set as the baseline.** Identical green = upgrade preserved behavior; any new failure is an upgrade regression to report.
 
@@ -43,7 +46,9 @@ This is the maintainer-intended verification loop (see `node_modules/@supabase/l
 
 10. **Log upgrade frictions.** Anything broken/unclear in `lite upgrade` itself goes in the project's `friction.md` (per the repo's logging protocol), not encoded as a permanent workaround here.
 
-11. **Record state in `UPGRADES.md`** (repo root). This is the at-a-glance index of which projects have been through this skill. Mark the project **done** and fill its row: number of e2e tests, what's tested (auth / CRUD / filters / RLS isolation / etc.), the `@supabase/lite` version it was upgraded with, baseline vs upgraded result (e.g. `7/7 ↔ 7/7`), and the date performed. If `UPGRADES.md` doesn't exist yet, create it with a row for **every** project directory (the `YYYY-MM-DD-<model>-<stack>-<name>/` slugs) marked **pending**, then flip the one you just finished to done.
+11. **Record state in `UPGRADES.md`** (repo root). This is the at-a-glance index of which projects have been through this skill. Mark the project **done** and fill its row: number of e2e tests, what's tested (auth / CRUD / filters / RLS isolation / etc.), the `@supabase/lite` version it was upgraded with, baseline vs upgraded result (e.g. `7/7 ↔ 7/7`), and the date performed. If `UPGRADES.md` doesn't exist yet, create it with a row for **every** project directory (the `YYYY-MM-DD-<model>-<stack>-<name>/` slugs) marked **pending**, then flip the one you just finished to done. Add a row for any project directory that is missing from the table.
+
+   **Stale rows.** A row is **stale** when its gate passed but the project now pins a newer `@supabase/lite` than the version in the row. Mark it `♻️ stale` and note the current pin in the version cell. Only a full re-run of this skill (baseline **and** upgraded) at the new version clears it: then set it back to done and update the version, result, and date cells. A baseline-only re-run does not clear it.
 
 ## Anti-patterns
 

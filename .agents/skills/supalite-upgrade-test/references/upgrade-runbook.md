@@ -19,6 +19,10 @@ bun run dev   # wait until ready, then stop
 
 # 2. readiness + in-memory rehearsal, no changes
 bunx lite upgrade --dry-run
+#    If it fails with "requires recorded PostgreSQL migration history or pending
+#    migration files", the project has only schemas/*.sql. Create a migration:
+#      bunx lite db diff -f prepare_upgrade
+#    and re-run the dry-run. Delete that file after the run (see Teardown).
 
 # 3. real upgrade into a local Supabase stack
 bunx lite upgrade --target local --force --no-migrate-sessions
@@ -42,8 +46,10 @@ The local-target path may `import 'bun'`, which only resolves under bun. If `bun
 bun --bun node_modules/@supabase/lite/dist/cli/index.js upgrade --target local --force --no-migrate-sessions
 ```
 
+Not seen at `0.10.1-next.7`: plain `bunx lite upgrade --target local` worked.
+
 ### The schema-apply step needs the `postgres` npm driver
-If you see `Driver 'postgres' selected but 'postgres' is not installed. Run: bun add postgres` (this happens *after* Docker is up), install it and re-run:
+If you see `Driver 'postgres' selected but 'postgres' is not installed. Run: bun add postgres` (this happens *after* Docker is up), install it and re-run. Still seen at `0.10.1-next.7`. The dry-run does not detect it, so install the driver before the real upgrade:
 
 ```bash
 bun add postgres        # or: npm install postgres  (match your project's package manager)
@@ -55,6 +61,11 @@ The default workdir is the project dir, so the upgrade overwrites `supabase/conf
 - run with `--local-dir <tmp-dir>` so the Supabase CLI workdir/config lives elsewhere, **or**
 - back up `config.toml` before and restore after (`git checkout supabase/config.toml` if it's tracked).
 
+With `--local-dir`, the Supabase stack still keeps running after the upgrade. Stop it in teardown.
+
+### A `prepare_upgrade` migration breaks supalite dev
+If you created `supabase/migrations/*_prepare_upgrade.sql` for the dry-run, `bun run dev` then crashes with `Error: table items already exists` (the table name differs per project). The migration stays pending, and the schema file already created the tables. Delete the untracked migration after the upgrade run (`git clean -fd supabase/migrations`). Create it again for the next run.
+
 ### Installing a `pkg.pr.new` canary of `@supabase/lite`
 Bun may reject a `pkg.pr.new` URL with a `DependencyLoop` error. Fall back to npm:
 
@@ -63,11 +74,33 @@ npm install "https://pkg.pr.new/supabase-community/lite/@supabase/lite@<n>"
 ```
 and use npm for the rest of that project's installs (note the switch; a `package-lock.json` will appear).
 
+## Bumping old projects (observed at `0.10.1-next.6`)
+
+### Old package name `lite-supa`
+Early projects depend on `lite-supa`, the old name of `@supabase/lite`. Remove it, add `@supabase/lite`, and change the Vite import. The plugin export name did not change:
+
+```diff
+-import { supalite } from "lite-supa/vite";
++import { supalite } from "@supabase/lite/vite";
+```
+
+Then `grep -rn "lite-supa" --exclude-dir=node_modules --exclude-dir=.logs .` must return nothing.
+
+### Pins that no longer install
+Some projects pin a `pkg.pr.new` URL (old preview builds now return 404) or a local `.tgz` file that is no longer on disk. Replace the pin with a registry version. Do not look for the old build. A `pkg.pr.new` build can also bring in packages the registry build does not (e.g. `@types/node`). If `bun run build` then fails on missing types, add them to `devDependencies`.
+
+### Stale local database
+An old `supabase/.temp/data.db` can fail to migrate `auth.*` tables after the bump. The dev server still starts. Read the whole boot log and run `bunx lite db reset --hard` only if the log shows a migration error. See SKILL.md step 1.
+
+`db reset --hard` prints a warning that the schema and RLS are gone. That is expected: the Vite plugin applies them again on the next boot. Do not run `db diff` because of that warning.
+
 ## Teardown
 
 ```bash
 bunx supabase@<pinned> stop --workdir . --no-backup
 rm -rf supabase/.branches supabase/.temp supabase-credentials.json
+# remove the prepare_upgrade migration if you created one (untracked files only; keeps committed migrations)
+git clean -fd supabase/migrations
 # restore config.toml if you ran the in-place local upgrade
 git checkout supabase/config.toml
 # confirm supalite dev + baseline e2e are green again
