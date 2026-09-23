@@ -55,3 +55,16 @@
 - green-green (supalite 7/7, upgraded Supabase 7/7) — upgrade preserved behavior
 - teardown: `supabase stop --no-backup`, removed `.branches`/`.temp`/`supabase-credentials.json`/`config.toml.bak`, `git checkout supabase/config.toml`; re-confirmed supalite baseline 7/7 green
 - outcome: ok
+
+### 2026-09-23T11:30Z — meta: full re-run of `supalite-upgrade-test` at 0.10.1-next.7
+- not part of the original run; clears the `♻️ stale` row in UPGRADES.md
+- `npm view @supabase/lite dist-tags` → `latest: 0.10.0`, `next: 0.10.1-next.7`; bumped 0.10.1-next.6 → 0.10.1-next.7 (`bun add @supabase/lite@0.10.1-next.7 --exact`)
+- boot log after bump: `Migration error: cannot INSERT into generated column "confirmed_at"` (friction.md); ran `bunx lite db reset --hard`; next boot clean
+- dev server on port 5231 (`bun run dev -- --port 5231 --strictPort`, `E2E_BASE_URL=http://localhost:5231`); Playwright reused it, no config edit
+- baseline vs supalite: 7/7
+- `lite upgrade --dry-run` refused (declarative-only project); ran `lite db diff -f prepare_upgrade`; dry-run passed
+- `bunx lite upgrade --target local --local-dir /tmp/inv-upgrade --force --no-migrate-sessions`: ok first try, no `bun` runtime crash; `config.toml` not touched; API `http://127.0.0.1:64520`
+- upgraded vs local Supabase (same suite, `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` set): 7/7; checked e2e users landed in the Postgres container
+- retest: moved `postgres` aside for one run → driver error still happens after Docker starts (friction.md); restored
+- teardown: stopped both stacks, removed temp dirs, deleted generated `supabase/migrations/` (it crashes supalite dev boot, see friction.md); final baseline 7/7
+- outcome: ok, 7/7 ↔ 7/7

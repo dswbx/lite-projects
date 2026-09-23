@@ -5,7 +5,7 @@
     "": {
       "name": "app",
       "dependencies": {
-        "@supabase/lite": "0.10.1-next.6",
+        "@supabase/lite": "0.10.1-next.7",
         "@supabase/supabase-js": "^2.106.2",
         "@tailwindcss/vite": "^4.3.0",
         "postgres": "^3.4.9",
@@ -179,7 +179,7 @@
 
     "@supabase/functions-js": ["@supabase/functions-js@2.106.2", "", { "dependencies": { "tslib": "2.8.1" } }, "sha512-oRnr0QrL8H+zTO1YyQ1QjiHZU/957jvubbxSJTUm2XLAgzoGGV9Tahfyd+uvLsBLRVmXLtpU3oyCjdQIvkGMOA=="],
 
-    "@supabase/lite": ["@supabase/lite@0.10.1-next.6", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@electric-sql/pglite": "0.4.5", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.34", "@supabase/supabase-js": "^2.97.0", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "chokidar": "^5.0.0", "commander": "^14.0.3", "dotenv": "^17.3.1", "jose": "^6.1.3", "jsonv-ts": "^0.10.1", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "nodemailer": "^9.0.5", "pgsql-deparser": "17.18.3", "pgsql-parser": "17.9.15", "uuid": "^13.0.0" }, "peerDependencies": { "@libsql/client": "^0.17.4", "postgres": "^3.4.8", "react": ">=19.0.0", "react-dom": ">=19.0.0", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["@libsql/client", "postgres", "react", "react-dom", "vite"], "bin": { "lite": "dist/cli/index.js" } }, "sha512-DXnKe/yR5UJaX2KzOuKzTw8EHlUNlGxRAytVPaCL/J2GIHIQsqR5CNycLXbt+0T/zlBAd69T4MtM7F93xY20qA=="],
+    "@supabase/lite": ["@supabase/lite@0.10.1-next.7", "", { "dependencies": { "@commander-js/extra-typings": "^14.0.0", "@electric-sql/pglite": "0.4.5", "@hono/node-server": "^1.19.9", "@sentry/node": "^10.51.0", "@supabase/pg-delta": "1.0.0-alpha.34", "@supabase/supabase-js": "^2.97.0", "@vercel/detect-agent": "^1.2.3", "bcryptjs": "^3.0.3", "chokidar": "^5.0.0", "commander": "^14.0.3", "dotenv": "^17.3.1", "jose": "^6.1.3", "jsonv-ts": "^0.10.1", "kysely": "^0.28.11", "kysely-generic-sqlite": "^1.2.1", "kysely-postgres-js": "^3.0.0", "libpg-query": "17.7.3", "nodemailer": "^9.0.5", "pgsql-deparser": "17.18.3", "pgsql-parser": "17.9.15", "uuid": "^13.0.0" }, "peerDependencies": { "@libsql/client": "^0.17.4", "postgres": "^3.4.8", "react": ">=19.0.0", "react-dom": ">=19.0.0", "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0" }, "optionalPeers": ["@libsql/client", "postgres", "react", "react-dom", "vite"], "bin": { "lite": "dist/cli/index.js" } }, "sha512-WOLA74zHD4QL+WUoO275w6UvxBDserEiOvHCNVDZZ5rawdRja4+YSU8Lupo+ljQ1Cxizvcd0EUCSMPQ1n8HMsw=="],
 
     "@supabase/pg-delta": ["@supabase/pg-delta@1.0.0-alpha.34", "", { "dependencies": { "debug": "^4.3.7", "pg": "^8.17.2", "pg-connection-string": "^2.13.0" }, "peerDependencies": { "@supabase/pg-topo": "^1.0.0-alpha.3" }, "optionalPeers": ["@supabase/pg-topo"], "bin": { "pgdelta": "dist/cli/main.js" } }, "sha512-xjNBdFl4/DXIxZufUK6t52wTywMS4sl1rcXvxTgh3mv1Q50tDeMPkjp8QM5YRjYo/mrdxZJ94kmbf6XAQn0jRg=="],
 
