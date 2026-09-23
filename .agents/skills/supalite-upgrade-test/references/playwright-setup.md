@@ -67,7 +67,8 @@ export default defineConfig({
   reporter: [["list"]],
   use: { baseURL, trace: "on-first-retry" },
   webServer: {
-    command: "bun run dev",
+    // pass the port so E2E_BASE_URL on a non-default port works
+    command: `bun run dev -- --port ${new URL(baseURL).port || 5173} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

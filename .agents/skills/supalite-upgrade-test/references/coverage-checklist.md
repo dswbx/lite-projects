@@ -4,7 +4,7 @@ The upgrade gate is only meaningful if the suite exercises everything the app do
 
 ## How to enumerate
 
-1. **Data layer.** Find every supabase call (`grep -rn "supabase\.\(from\|auth\|rpc\|storage\)" src`). For each `from(table)`, list the `.select/.insert/.update/.delete` operations and embedded selects. Each gets at least one test.
+1. **Data layer.** Find every supabase call (`grep -rn "\.from(\|\.auth\.\|\.rpc(\|\.storage\." src`; this also finds calls chained on a new line after `supabase`). For each `from(table)`, list the `.select/.insert/.update/.delete` operations and embedded selects. Each gets at least one test.
 2. **Auth.** Every `auth.*` call: `signUp`, `signInWithPassword`/`signInWithOtp`, `signOut`, session restore, etc.
 3. **RLS policies.** Open `supabase/schemas/*.sql` (or migrations). For **each policy** (select/insert/update/delete per table), assert it: the owner can do the action, and — critically — a **second user cannot** see/modify the first user's rows (isolation). This is the highest-value check and the most likely to behave differently across backends.
 4. **Computed/derived UI.** Any client-side formatting/aggregation (date formatting, summaries, counts) that users rely on — assert the rendered string.
